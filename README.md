@@ -2,37 +2,36 @@
 
 NovaCode - учебная LMS-платформа для программирования на FastAPI + React. В проекте есть видеоуроки, интерактивные задачи, рабочие мини-игры, XP/leaderboard, dashboard, code editor, RU/EN, light/dark theme и админ-панель.
 
-## Что обновлено
+## Что есть сейчас
 
-- Sidebar исправлен для zoom 100%, 125%, 150%: `100vh`, нормальный scroll, sticky нижний user/admin block, стабильный hamburger на mobile.
-- Игры теперь реально работают: Binary Blitz, Bug Hunt, Hacker Escape, Typing Race, Output Guess.
-- В играх есть вопросы, проверка ответа, score, timer, combo, XP reward, restart, leaderboard save, win/lose screen и confetti.
-- Tasks получили detail page, textarea/code editor, submit, проверку, hints, XP reward, сохранение submission и историю.
-- Backend API поддерживает игры, задачи, score/submission и безопасное auto schema update для SQLite.
+- Рабочие игры: Binary Blitz, Bug Hunt, Hacker Escape, Typing Race, Output Guess.
+- Задачи с detail page, textarea/code editor, submit, hints, XP reward и историей отправок.
+- Уроки разделены по категориям: Python, JavaScript, React, FastAPI, PostgreSQL, Docker.
+- На каждую технологию добавлено по 3 YouTube-урока с thumbnail, duration, difficulty и XP reward.
+- Блок "Технологии будущего" на главной ведёт на `/lessons?category=...`.
+- Sidebar адаптирован под zoom 100-150%, mobile menu и нормальный scroll.
+- Админ-панель читаемая в dark/light mode: labels, inputs, placeholders, tables и sidebar.
+- Backend безопасно обновляет SQLite schema при старте.
 
 ## Быстрый запуск
-
-Основной локальный адрес:
-
-```text
-http://127.0.0.1:8000/
-```
-
-Самый простой запуск на Windows:
-
-```bat
-start.bat
-```
-
-Ручной запуск backend из корня проекта:
 
 ```powershell
 python -m uvicorn app.main:app --app-dir backend --reload
 ```
 
-Backend сам проверяет `frontend_react/dist` и при необходимости пересобирает React frontend.
+Откройте:
 
-## Frontend build
+```text
+http://127.0.0.1:8000/
+```
+
+На Windows также можно запустить:
+
+```bat
+start.bat
+```
+
+## Frontend
 
 ```powershell
 cd frontend_react
@@ -40,7 +39,7 @@ npm install
 npm run build
 ```
 
-Для dev hot reload можно использовать:
+Для dev hot reload:
 
 ```bat
 start-dev.bat
@@ -48,18 +47,9 @@ start-dev.bat
 
 ## Демо-аккаунты
 
-Админ:
-
 ```text
-admin@example.com
-Admin123!
-```
-
-Студент:
-
-```text
-student@example.com
-Student123!
+Admin:   admin@example.com / Admin123!
+Student: student@example.com / Student123!
 ```
 
 ## Основные страницы
@@ -75,6 +65,7 @@ Student123!
 /tasks
 /tasks/:taskId
 /lessons
+/lessons?category=python
 /admin/
 ```
 
@@ -88,36 +79,17 @@ GET  /api/tasks
 GET  /api/tasks/{id}
 POST /api/tasks/{id}/submit
 GET  /api/lessons
-GET  /api/auth/me
+GET  /api/lessons?category=python
+GET  /api/lessons/{id}
 ```
-
-## Database
-
-SQLite создаётся автоматически при старте. Bootstrap проверяет и обновляет нужные таблицы/поля:
-
-- `users`
-- `user_activities`
-- `games`
-- `game_scores`
-- `tasks`
-- `task_submissions`
-- `lessons`
-- `comments`
-
-Если старая база не содержит новых полей для XP, hints, timers или task/game metadata, backend добавит их безопасно при запуске.
 
 ## Проверка перед релизом
 
 ```powershell
+cd frontend_react
 npm run build
-python -m compileall backend
+cd ..
 python -m uvicorn app.main:app --app-dir backend --reload
-```
-
-После запуска откройте:
-
-```text
-http://127.0.0.1:8000/
 ```
 
 Проверьте sidebar при zoom 125-150%, игры, задачи, админку, RU/EN, light/dark theme и видеоуроки.

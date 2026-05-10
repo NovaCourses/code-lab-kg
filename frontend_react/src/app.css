@@ -1978,7 +1978,9 @@ body[data-theme='light'] .particle {
 /* Tech Stack Section */
 .tech-stack-section {
   padding: 6rem 2rem;
-  background: var(--futuristic-bg-secondary);
+  background:
+    radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--accent-b) 16%, transparent), transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 10%, transparent), var(--futuristic-bg-secondary));
 }
 
 .tech-stack-container {
@@ -1999,13 +2001,19 @@ body[data-theme='light'] .particle {
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  min-height: 168px;
   padding: 2rem;
-  background: color-mix(in srgb, var(--panel-strong) 5%, transparent);
-  border: 1px solid var(--border);
+  color: var(--ink-0);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--panel-strong) 12%, transparent), color-mix(in srgb, var(--panel) 76%, transparent)),
+    color-mix(in srgb, var(--bg-0) 76%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 78%, var(--accent-b));
   border-radius: 20px;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   cursor: pointer;
+  text-decoration: none;
+  user-select: none;
 }
 
 .tech-icon-card:hover {
@@ -2020,8 +2028,13 @@ body[data-theme='light'] .particle {
 
 .tech-name {
   font-size: 1.1rem;
-  font-weight: 600;
-  color: color-mix(in srgb, var(--ink-0) 90%, transparent);
+  font-weight: 800;
+  color: var(--ink-0);
+}
+
+.tech-stack-section ::selection {
+  color: var(--ink-0);
+  background: color-mix(in srgb, var(--accent-b) 28%, transparent);
 }
 
 /* Daily Missions */
@@ -4595,6 +4608,39 @@ body[data-theme='dark'] .premium-grid-overlay {
 .continue-learning-title span {
   color: color-mix(in srgb, var(--ink-0) 58%, transparent);
   font-size: 0.82rem;
+}
+
+.lesson-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 0.65rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    color-mix(in srgb, var(--panel-strong) 74%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.lesson-category-tabs button {
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.48rem 0.82rem;
+  color: var(--ink-0);
+  background: color-mix(in srgb, var(--panel-strong) 10%, transparent);
+  font-weight: 850;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.lesson-category-tabs button:hover,
+.lesson-category-tabs button.active {
+  border-color: color-mix(in srgb, var(--accent-b) 45%, var(--border));
+  background: linear-gradient(135deg, rgba(47, 208, 193, 0.18), color-mix(in srgb, var(--accent-b) 12%, transparent));
+  box-shadow: 0 12px 30px rgba(47, 208, 193, 0.16);
+  transform: translateY(-1px);
 }
 
 .continue-learning-strip {

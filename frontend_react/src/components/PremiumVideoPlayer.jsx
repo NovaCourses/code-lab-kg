@@ -86,6 +86,7 @@ const PremiumVideoPlayer = memo(function PremiumVideoPlayer({
       enablejsapi: 1,
     })
   }, [embedBase, hasStarted, videoUrl])
+  const iframeKey = useMemo(() => `${embedBase || videoUrl || 'youtube'}-${iframeNonce}`, [embedBase, iframeNonce, videoUrl])
 
   const sendCommand = useCallback((func, args = []) => {
     iframeRef.current?.contentWindow?.postMessage(
@@ -327,7 +328,7 @@ const PremiumVideoPlayer = memo(function PremiumVideoPlayer({
 
           {iframeSrc && !showError && (
             <iframe
-              key={`${embedBase}-${iframeNonce}`}
+              key={iframeKey}
               ref={iframeRef}
               src={iframeSrc}
               title={displayTitle}

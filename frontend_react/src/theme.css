@@ -550,6 +550,19 @@ body[data-theme] :where(
   background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent-b));
 }
 
+body[data-theme] .tech-icon-card {
+  color: var(--ink-0);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ink-0) 8%, transparent), color-mix(in srgb, var(--ink-0) 3%, transparent)),
+    var(--surface-1);
+  border-color: color-mix(in srgb, var(--secondary) 24%, var(--border));
+  text-decoration: none;
+}
+
+body[data-theme] .tech-name {
+  color: var(--ink-0);
+}
+
 body[data-theme] :where(
   .recharts-cartesian-grid line,
   .recharts-cartesian-axis-line,

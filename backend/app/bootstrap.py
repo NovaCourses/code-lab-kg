@@ -7,34 +7,201 @@ from app.core.database import Base, SessionLocal, engine
 from app.entities.games.models import Game, GameQuestion, GameSetting
 from app.entities.home.models import HomeSliderItem
 from app.entities.lessons.models import Lesson, LessonVideoLink
+from app.entities.lessons.service import extract_youtube_video_id
 from app.entities.tasks.models import Task
 from app.entities.users.schemas import UserRegister
 from app.entities.users.service import create_user, get_by_email
 from app.models import Comment, GameScore, TaskSubmission  # noqa: F401
 
+def lesson_payload(
+    category: str,
+    title: str,
+    video_id: str,
+    duration: str,
+    difficulty: str,
+    xp_reward: int,
+    description: str,
+) -> dict:
+    embed_url = f"https://www.youtube.com/embed/{video_id}"
+    return {
+        "category": category,
+        "title_en": title,
+        "title_ru": title,
+        "description_en": description,
+        "description_ru": description,
+        "youtube_url": embed_url,
+        "thumbnail_url": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+        "difficulty": difficulty,
+        "duration": duration,
+        "xp_reward": xp_reward,
+    }
+
+
 DEMO_LESSONS = [
-    {
-        "title_en": "Python Basics in 15 Minutes",
-        "title_ru": "Основы Python за 15 минут",
-        "description_en": "Variables, loops, functions, and your first script structure.",
-        "description_ru": "Переменные, циклы, функции и структура первого скрипта.",
-        "youtube_url": "https://www.youtube.com/watch?v=rfscVS0vtbw",
-    },
-    {
-        "title_en": "FastAPI Crash Course",
-        "title_ru": "Быстрый старт с FastAPI",
-        "description_en": "Build your first API with routing, models, and validation.",
-        "description_ru": "Создайте первое API с роутами, моделями и валидацией.",
-        "youtube_url": "https://www.youtube.com/watch?v=0sOvCWFmrtA",
-    },
-    {
-        "title_en": "SQLAlchemy ORM Intro",
-        "title_ru": "Введение в SQLAlchemy ORM",
-        "description_en": "How models, sessions, and relationships work in practice.",
-        "description_ru": "Как в реальном проекте работают модели, сессии и связи.",
-        "youtube_url": "https://www.youtube.com/watch?v=woKYyhLCcnU",
-    },
+    lesson_payload(
+        "python",
+        "Python for Beginners - freeCodeCamp",
+        "rfscVS0vtbw",
+        "4:26:52",
+        "beginner",
+        120,
+        "A complete Python foundation course covering syntax, variables, functions, and core programming ideas.",
+    ),
+    lesson_payload(
+        "python",
+        "Python Tutorial for Beginners - Programming with Mosh",
+        "kqtD5dpn9C8",
+        "1:00:06",
+        "beginner",
+        80,
+        "Beginner-friendly Python tutorial with practical examples and clean explanations.",
+    ),
+    lesson_payload(
+        "python",
+        "Python OOP Tutorial - Corey Schafer",
+        "ZDa-Z5JzLYM",
+        "57:00",
+        "intermediate",
+        95,
+        "Learn classes, objects, methods, and object-oriented design in Python.",
+    ),
+    lesson_payload(
+        "javascript",
+        "JavaScript Full Course - freeCodeCamp",
+        "PkZNo7MFNFg",
+        "3:26:43",
+        "beginner",
+        115,
+        "A full JavaScript course from basics to practical browser scripting.",
+    ),
+    lesson_payload(
+        "javascript",
+        "JavaScript Crash Course - Traversy Media",
+        "hdI2bqOjy3c",
+        "1:40:30",
+        "beginner",
+        85,
+        "A compact crash course on modern JavaScript fundamentals.",
+    ),
+    lesson_payload(
+        "javascript",
+        "JavaScript Tutorial for Beginners - Programming with Mosh",
+        "W6NZfCO5SIk",
+        "48:17",
+        "beginner",
+        70,
+        "Learn JavaScript syntax, control flow, objects, and functions.",
+    ),
+    lesson_payload(
+        "react",
+        "React JS Crash Course - Traversy Media",
+        "w7ejDZ8SWv8",
+        "1:48:00",
+        "beginner",
+        90,
+        "Build a React app while learning components, props, state, and hooks.",
+    ),
+    lesson_payload(
+        "react",
+        "React Course - freeCodeCamp",
+        "bMknfKXIFA8",
+        "11:55:27",
+        "intermediate",
+        160,
+        "A project-based React course covering modern UI development.",
+    ),
+    lesson_payload(
+        "react",
+        "React Tutorial for Beginners - Programming with Mosh",
+        "SqcY0GlETPk",
+        "1:20:00",
+        "beginner",
+        90,
+        "Learn React fundamentals through reusable components and stateful UI.",
+    ),
+    lesson_payload(
+        "fastapi",
+        "FastAPI Course - freeCodeCamp",
+        "0sOvCWFmrtA",
+        "19:00:00",
+        "intermediate",
+        180,
+        "Build APIs with FastAPI, validation, database access, and authentication patterns.",
+    ),
+    lesson_payload(
+        "fastapi",
+        "FastAPI Tutorial - Tech With Tim",
+        "-ykeT6kk4bk",
+        "1:06:00",
+        "beginner",
+        80,
+        "Create a practical FastAPI project and understand routing and request handling.",
+    ),
+    lesson_payload(
+        "fastapi",
+        "FastAPI Crash Course",
+        "7t2alSnE2-I",
+        "1:15:00",
+        "beginner",
+        85,
+        "A focused FastAPI crash course for quickly building working API endpoints.",
+    ),
+    lesson_payload(
+        "postgresql",
+        "PostgreSQL Tutorial for Beginners - freeCodeCamp",
+        "qw--VYLpxG4",
+        "4:19:34",
+        "beginner",
+        115,
+        "Learn PostgreSQL tables, queries, joins, and database fundamentals.",
+    ),
+    lesson_payload(
+        "postgresql",
+        "PostgreSQL Course - Amigoscode",
+        "85pG_pDkITY",
+        "2:22:00",
+        "intermediate",
+        100,
+        "A practical PostgreSQL course with schema design and SQL examples.",
+    ),
+    lesson_payload(
+        "postgresql",
+        "PostgreSQL Tutorial - ProgrammingKnowledge",
+        "SpfIwlAYaKk",
+        "1:35:00",
+        "beginner",
+        85,
+        "Get started with PostgreSQL installation, SQL commands, and database workflows.",
+    ),
+    lesson_payload(
+        "docker",
+        "Docker Tutorial for Beginners - TechWorld with Nana",
+        "3c-iBn73dDE",
+        "2:54:00",
+        "beginner",
+        105,
+        "Learn containers, images, Dockerfiles, and everyday Docker workflows.",
+    ),
+    lesson_payload(
+        "docker",
+        "Docker Course - freeCodeCamp",
+        "fqMOX6JJhGo",
+        "3:10:00",
+        "intermediate",
+        120,
+        "A deeper Docker course covering images, containers, volumes, and deployment basics.",
+    ),
+    lesson_payload(
+        "docker",
+        "Docker Crash Course - Traversy Media",
+        "pg19Z8LL06w",
+        "1:08:00",
+        "beginner",
+        85,
+        "A concise Docker crash course for app containers and local development.",
+    ),
 ]
+
 
 DEMO_TASKS = [
     {
@@ -407,6 +574,7 @@ def ensure_multilang_columns() -> None:
 def ensure_lesson_admin_columns() -> None:
     columns = {
         "thumbnail_url": "VARCHAR(1000)",
+        "category": "VARCHAR(50) NOT NULL DEFAULT 'python'",
         "difficulty": "VARCHAR(30) NOT NULL DEFAULT 'beginner'",
         "duration": "VARCHAR(30)",
         "xp_reward": "INTEGER NOT NULL DEFAULT 50",
@@ -477,6 +645,7 @@ def ensure_admin_indexes() -> None:
         "CREATE INDEX IF NOT EXISTS idx_users_is_admin ON users(is_admin)",
         "CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)",
         "CREATE INDEX IF NOT EXISTS idx_lessons_created_at ON lessons(created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_lessons_category_created ON lessons(category, created_at)",
         "CREATE INDEX IF NOT EXISTS idx_lesson_video_links_lesson_created ON lesson_video_links(lesson_id, created_at)",
         "CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at)",
         "CREATE INDEX IF NOT EXISTS idx_task_submissions_task_created ON task_submissions(task_id, created_at)",
@@ -518,22 +687,35 @@ def seed_admin() -> None:
 
 def seed_lessons() -> None:
     with SessionLocal() as db:
-        any_lesson = db.scalar(select(Lesson.id).limit(1))
-        if any_lesson:
-            return
+        existing_lessons = list(db.scalars(select(Lesson)).all())
+        existing_by_url = {item.youtube_url: item for item in existing_lessons}
+        existing_by_video_id = {
+            video_id: item
+            for item in existing_lessons
+            if (video_id := extract_youtube_video_id(item.youtube_url))
+        }
 
         for payload in DEMO_LESSONS:
-            db.add(
-                Lesson(
+            lesson = existing_by_url.get(payload["youtube_url"]) or existing_by_video_id.get(extract_youtube_video_id(payload["youtube_url"]))
+            if not lesson:
+                lesson = Lesson(
                     title=payload["title_en"],
                     description=payload["description_en"],
-                    title_en=payload["title_en"],
-                    title_ru=payload["title_ru"],
-                    description_en=payload["description_en"],
-                    description_ru=payload["description_ru"],
                     youtube_url=payload["youtube_url"],
                 )
-            )
+            lesson.title = payload["title_en"]
+            lesson.description = payload["description_en"]
+            lesson.title_en = payload["title_en"]
+            lesson.title_ru = payload["title_ru"]
+            lesson.description_en = payload["description_en"]
+            lesson.description_ru = payload["description_ru"]
+            lesson.thumbnail_url = payload.get("thumbnail_url")
+            lesson.category = payload.get("category", "python")
+            lesson.difficulty = payload.get("difficulty", "beginner")
+            lesson.duration = payload.get("duration")
+            lesson.xp_reward = payload.get("xp_reward", 50)
+            lesson.is_published = True
+            db.add(lesson)
         db.commit()
 
 
@@ -647,14 +829,21 @@ def seed_game_settings_and_questions() -> None:
 
 def sync_existing_multilang_content() -> None:
     lesson_by_url = {item["youtube_url"]: item for item in DEMO_LESSONS}
+    lesson_by_video_id = {
+        video_id: item
+        for item in DEMO_LESSONS
+        if (video_id := extract_youtube_video_id(item["youtube_url"]))
+    }
     task_by_title = {item["title_en"]: item for item in DEMO_TASKS}
 
     with SessionLocal() as db:
-        lessons = list(db.scalars(select(Lesson)).all())
+        lessons = list(db.scalars(select(Lesson).order_by(Lesson.id.asc())).all())
+        published_demo_video_ids: set[str] = set()
         for lesson in lessons:
             lesson.title_en = lesson.title_en or lesson.title
             lesson.description_en = lesson.description_en or lesson.description
-            seeded = lesson_by_url.get(lesson.youtube_url)
+            lesson_video_id = extract_youtube_video_id(lesson.youtube_url)
+            seeded = lesson_by_url.get(lesson.youtube_url) or lesson_by_video_id.get(lesson_video_id)
             if seeded:
                 lesson.title_en = seeded["title_en"]
                 lesson.title_ru = seeded["title_ru"]
@@ -662,9 +851,25 @@ def sync_existing_multilang_content() -> None:
                 lesson.description_ru = seeded["description_ru"]
                 lesson.title = seeded["title_en"]
                 lesson.description = seeded["description_en"]
+                lesson.thumbnail_url = seeded.get("thumbnail_url") or lesson.thumbnail_url
+                lesson.category = seeded.get("category", lesson.category or "python")
+                lesson.difficulty = seeded.get("difficulty", lesson.difficulty or "beginner")
+                lesson.duration = seeded.get("duration") or lesson.duration
+                lesson.xp_reward = seeded.get("xp_reward", lesson.xp_reward or 50)
+                if lesson_video_id in published_demo_video_ids:
+                    lesson.is_published = False
+                else:
+                    lesson.is_published = True
+                    if lesson_video_id:
+                        published_demo_video_ids.add(lesson_video_id)
             else:
                 lesson.title_ru = lesson.title_ru or lesson.title_en or lesson.title
                 lesson.description_ru = lesson.description_ru or lesson.description_en or lesson.description
+                if (lesson.title_en or lesson.title) == "SQLAlchemy ORM Intro":
+                    lesson.category = "legacy"
+                    lesson.is_published = False
+                else:
+                    lesson.category = lesson.category or "python"
             db.add(lesson)
 
         tasks = list(db.scalars(select(Task)).all())

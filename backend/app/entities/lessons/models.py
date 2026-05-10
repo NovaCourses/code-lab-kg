@@ -18,6 +18,7 @@ class Lesson(Base):
     description_ru: Mapped[str | None] = mapped_column(Text, nullable=True)
     youtube_url: Mapped[str] = mapped_column(String(500), nullable=False)
     thumbnail_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    category: Mapped[str] = mapped_column(String(50), default="python", nullable=False)
     difficulty: Mapped[str] = mapped_column(String(30), default="beginner", nullable=False)
     duration: Mapped[str | None] = mapped_column(String(30), nullable=True)
     xp_reward: Mapped[int] = mapped_column(Integer, default=50, nullable=False)

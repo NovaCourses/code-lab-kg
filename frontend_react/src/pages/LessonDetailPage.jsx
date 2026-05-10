@@ -49,6 +49,17 @@ import {
   toggleLocalCommentLike,
 } from '../services/lessonExperience'
 
+function parseDurationToSeconds(value) {
+  if (!value) return 0
+  const parts = String(value)
+    .split(':')
+    .map((part) => Number(part.trim()))
+  if (!parts.length || parts.some((part) => !Number.isFinite(part))) return 0
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  return parts[0] * 60
+}
+
 function buildLessonVideos(lesson, revision = 0) {
   if (!lesson) return []
   const links = lesson.links?.length
@@ -66,8 +77,8 @@ function buildLessonVideos(lesson, revision = 0) {
   return links.map((link, index) => {
     const url = link.url || link.embedUrl || lesson.youtubeUrl
     const videoId = extractYoutubeVideoId(url)
-    const durationSeconds = estimateLessonDuration(videoId, index)
-    const difficulty = getLessonDifficulty(index)
+    const durationSeconds = parseDurationToSeconds(lesson.duration) || estimateLessonDuration(videoId, index)
+    const difficulty = lesson.difficulty || getLessonDifficulty(index)
     const progressKey = buildLessonVideoKey(lesson.id, link.id ?? videoId ?? index)
     const saved = getLessonProgress(progressKey)
 
@@ -84,7 +95,7 @@ function buildLessonVideos(lesson, revision = 0) {
       durationSeconds,
       durationLabel: formatDuration(durationSeconds),
       difficulty,
-      xpReward: getLessonXpReward(durationSeconds, difficulty),
+      xpReward: lesson.xpReward || getLessonXpReward(durationSeconds, difficulty),
       progress: saved?.progress || 0,
       watchedSeconds: saved?.watchedSeconds || 0,
       completed: Boolean(saved?.completed),

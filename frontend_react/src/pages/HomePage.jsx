@@ -21,6 +21,8 @@ import {
   Zap,
 } from 'lucide-react'
 
+const MotionLink = motion.create(Link)
+
 const AnimatedCounter = memo(function AnimatedCounter({ value, suffix = '' }) {
   const [current, setCurrent] = useState(0)
 
@@ -131,12 +133,12 @@ export default function HomePage() {
   ]
 
   const technologies = [
-    { icon: Code, name: 'Python', color: '#3776AB' },
-    { icon: Layers, name: 'JavaScript', color: '#F7DF1E' },
-    { icon: Cpu, name: 'React', color: '#61DAFB' },
-    { icon: Server, name: 'FastAPI', color: '#009688' },
-    { icon: Database, name: 'PostgreSQL', color: '#336791' },
-    { icon: Zap, name: 'Docker', color: '#2496ED' },
+    { icon: Code, name: 'Python', slug: 'python', color: '#3776AB' },
+    { icon: Layers, name: 'JavaScript', slug: 'javascript', color: '#F7DF1E' },
+    { icon: Cpu, name: 'React', slug: 'react', color: '#61DAFB' },
+    { icon: Server, name: 'FastAPI', slug: 'fastapi', color: '#009688' },
+    { icon: Database, name: 'PostgreSQL', slug: 'postgresql', color: '#336791' },
+    { icon: Zap, name: 'Docker', slug: 'docker', color: '#2496ED' },
   ]
 
   const missions = [
@@ -429,9 +431,10 @@ export default function HomePage() {
 
           <div className="tech-icons-grid">
             {technologies.map((tech) => (
-              <motion.div
+              <MotionLink
                 key={tech.name}
                 className="tech-icon-card"
+                to={`/lessons?category=${tech.slug}`}
                 variants={itemVariants}
                 whileHover={{
                   scale: 1.1,
@@ -441,7 +444,7 @@ export default function HomePage() {
               >
                 <tech.icon className="tech-icon" style={{ color: tech.color }} />
                 <span className="tech-name">{tech.name}</span>
-              </motion.div>
+              </MotionLink>
             ))}
           </div>
         </div>

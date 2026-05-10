@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Award, Clock3, Flame, PlayCircle, Sparkles, Zap } from 'lucide-react'
 import { apiGet } from '../api'
 import { useAppContext } from '../contexts'
@@ -13,35 +13,52 @@ import {
   getWatchHistory,
 } from '../services/lessonExperience'
 
+const LESSON_CATEGORIES = [
+  { value: '', label: 'All' },
+  { value: 'python', label: 'Python' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'react', label: 'React' },
+  { value: 'fastapi', label: 'FastAPI' },
+  { value: 'postgresql', label: 'PostgreSQL' },
+  { value: 'docker', label: 'Docker' },
+]
+
+const categoryLabel = (value) => LESSON_CATEGORIES.find((item) => item.value === value)?.label || value
+
 function enrichLessonCard(lesson, index) {
   const videoId = extractYoutubeVideoId(lesson.youtubeUrl || lesson.embedUrl)
   const durationSeconds = estimateLessonDuration(videoId, index)
-  const difficulty = getLessonDifficulty(index)
+  const difficulty = lesson.difficulty || getLessonDifficulty(index)
   const progress = getLessonAggregate(lesson.id)
 
   return {
     ...lesson,
-    durationLabel: formatDuration(durationSeconds),
+    durationLabel: lesson.duration || formatDuration(durationSeconds),
     difficulty,
     progress: progress.progress,
     completed: progress.completed,
-    xpReward: getLessonXpReward(durationSeconds, difficulty),
-    thumbnail: getYoutubeThumbnail(lesson.youtubeUrl || lesson.embedUrl, 'high'),
+    xpReward: lesson.xpReward || getLessonXpReward(durationSeconds, difficulty),
+    thumbnail: lesson.thumbnailUrl || getYoutubeThumbnail(lesson.youtubeUrl || lesson.embedUrl, 'high'),
+    category: lesson.category || 'python',
   }
 }
 
 export default function LessonsPage() {
   const { lang, t } = useAppContext()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [revision, setRevision] = useState(0)
+  const activeCategory = (searchParams.get('category') || '').toLowerCase()
 
   useEffect(() => {
     setLoading(true)
-    apiGet(`/api/lessons?lang=${lang}`)
+    const query = new URLSearchParams({ lang })
+    if (activeCategory) query.set('category', activeCategory)
+    apiGet(`/api/lessons?${query.toString()}`)
       .then((data) => setItems(data.items || []))
       .finally(() => setLoading(false))
-  }, [lang])
+  }, [activeCategory, lang])
 
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1)
@@ -58,6 +75,15 @@ export default function LessonsPage() {
     return items.map(enrichLessonCard)
   }, [items, revision])
   const continueItems = getWatchHistory(3)
+  const selectCategory = (value) => {
+    const next = new URLSearchParams(searchParams)
+    if (value) {
+      next.set('category', value)
+    } else {
+      next.delete('category')
+    }
+    setSearchParams(next)
+  }
 
   return (
     <section className="lessons-hub">
@@ -85,6 +111,19 @@ export default function LessonsPage() {
           </article>
         </div>
       </header>
+
+      <nav className="lesson-category-tabs" aria-label="Lesson categories">
+        {LESSON_CATEGORIES.map((category) => (
+          <button
+            key={category.value || 'all'}
+            type="button"
+            className={activeCategory === category.value ? 'active' : ''}
+            onClick={() => selectCategory(category.value)}
+          >
+            {category.label}
+          </button>
+        ))}
+      </nav>
 
       {continueItems.length ? (
         <section className="continue-learning-strip">
@@ -136,6 +175,7 @@ export default function LessonsPage() {
                 <h2>{lesson.title}</h2>
                 <p>{lesson.description}</p>
                 <div className="lesson-card-tags">
+                  <span>{categoryLabel(lesson.category)}</span>
                   <span>{lesson.difficulty}</span>
                   <span>{t('lessonLinksCount')}: {lesson.linksCount ?? 1}</span>
                   {lesson.completed && (

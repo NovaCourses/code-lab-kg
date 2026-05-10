@@ -183,6 +183,7 @@ def _serialize_lesson(lesson, lang: str, include_links: bool = False) -> dict:
         "youtubeUrl": primary["url"] if primary else lesson.youtube_url,
         "embedUrl": primary["embedUrl"] if primary else to_embed_url(lesson.youtube_url),
         "thumbnailUrl": getattr(lesson, "thumbnail_url", None),
+        "category": getattr(lesson, "category", "python") or "python",
         "difficulty": getattr(lesson, "difficulty", "beginner"),
         "duration": getattr(lesson, "duration", None),
         "xpReward": getattr(lesson, "xp_reward", 50),
@@ -397,9 +398,14 @@ def api_home(request: Request, lang: str | None = Query(default=None), db: Sessi
 
 
 @api_router.get("/lessons")
-def api_lessons(request: Request, lang: str | None = Query(default=None), db: Session = Depends(get_db)):
+def api_lessons(
+    request: Request,
+    lang: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
     language = _get_lang(request, lang)
-    lessons = [_serialize_lesson(item, language) for item in list_lessons(db)]
+    lessons = [_serialize_lesson(item, language) for item in list_lessons(db, category=category)]
     return {"items": lessons}
 
 

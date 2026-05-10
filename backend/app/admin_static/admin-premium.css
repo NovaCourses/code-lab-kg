@@ -15,6 +15,12 @@
   --nova-pattern: rgba(148, 163, 184, 0.14);
   --nova-glow-a: rgba(124, 58, 237, 0.3);
   --nova-glow-b: rgba(6, 182, 212, 0.22);
+  --admin-text: #f8fafc;
+  --admin-muted: #cbd5e1;
+  --admin-panel: rgba(15, 23, 42, 0.92);
+  --admin-input: #1f2937;
+  --admin-input-text: #f8fafc;
+  --admin-border: rgba(255,255,255,0.16);
 }
 
 body[data-admin-theme='light'] {
@@ -29,6 +35,12 @@ body[data-admin-theme='light'] {
   --nova-pattern: rgba(37, 99, 235, 0.2);
   --nova-glow-a: rgba(124, 58, 237, 0.28);
   --nova-glow-b: rgba(6, 182, 212, 0.22);
+  --admin-text: #0f172a;
+  --admin-muted: #475569;
+  --admin-panel: #ffffff;
+  --admin-input: #f8fafc;
+  --admin-input-text: #0f172a;
+  --admin-border: rgba(15,23,42,0.14);
 }
 
 body {
@@ -806,6 +818,98 @@ select:focus,
   background: var(--nova-field-focus) !important;
   border-color: rgba(124, 58, 237, 0.68) !important;
   box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14), 0 0 22px rgba(6, 182, 212, 0.1) !important;
+}
+
+.admin-form label,
+.admin-form-grid label,
+.admin-form-field label,
+.form-label,
+label,
+.required,
+.required-label,
+.help-text,
+.form-hint,
+.form-help,
+.invalid-feedback,
+.admin-video-empty,
+.admin-form-kicker,
+.admin-sidebar-link,
+.admin-sidebar-section-title,
+.admin-brand-copy,
+.admin-table-card,
+.admin-table-card .table,
+.admin-table-card .table td,
+.admin-table-card .table th {
+  color: var(--admin-text) !important;
+}
+
+.text-muted,
+.form-text,
+.help-block,
+.admin-form-hero p,
+.admin-table-toolbar p,
+.admin-video-empty span,
+.admin-brand-copy small,
+.admin-sidebar-section-title {
+  color: var(--admin-muted) !important;
+}
+
+.admin-form-card,
+.admin-table-card,
+.card,
+.modal-content,
+.dropdown-menu {
+  color: var(--admin-text) !important;
+  background: var(--admin-panel) !important;
+  border-color: var(--admin-border) !important;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select,
+.admin-form-grid input,
+.admin-form-grid textarea,
+.admin-form-grid select,
+.form-control,
+.form-select,
+input:not([type='checkbox']):not([type='radio']):not([type='color']),
+textarea,
+select,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+  color: var(--admin-input-text) !important;
+  background: var(--admin-input) !important;
+  border: 1px solid var(--admin-border) !important;
+}
+
+.admin-form input::placeholder,
+.admin-form textarea::placeholder,
+.admin-form-grid input::placeholder,
+.admin-form-grid textarea::placeholder,
+.form-control::placeholder,
+textarea::placeholder {
+  color: var(--admin-muted) !important;
+  opacity: 1;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-results__option,
+.select2-dropdown {
+  color: var(--admin-input-text) !important;
+  background: var(--admin-input) !important;
+}
+
+.required-label::after,
+.required::after {
+  color: #f87171 !important;
+}
+
+.table,
+.table td,
+.table th,
+.table a,
+.dropdown-item {
+  color: var(--admin-text) !important;
 }
 
 .form-label {

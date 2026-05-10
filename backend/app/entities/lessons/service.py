@@ -10,10 +10,13 @@ YOUTUBE_VIDEO_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 YOUTUBE_VIDEO_ID_ANYWHERE_RE = re.compile(r"[A-Za-z0-9_-]{11}")
 
 
-def list_lessons(db: Session, include_unpublished: bool = False) -> list[Lesson]:
+def list_lessons(db: Session, include_unpublished: bool = False, category: str | None = None) -> list[Lesson]:
     query = select(Lesson).options(selectinload(Lesson.video_links)).order_by(Lesson.created_at.desc())
     if not include_unpublished:
         query = query.where(Lesson.is_published.is_(True))
+    normalized_category = (category or "").strip().lower()
+    if normalized_category:
+        query = query.where(Lesson.category == normalized_category)
     return list(db.scalars(query).all())
 
 
