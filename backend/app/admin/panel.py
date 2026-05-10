@@ -30,6 +30,8 @@ SUPPORTED_GAME_ENGINES = {
     "memory-syntax",
     "hacker-escape",
     "typing-speed-code",
+    "typing-race",
+    "output-guess",
     "quiz-arena",
     "external",
 }

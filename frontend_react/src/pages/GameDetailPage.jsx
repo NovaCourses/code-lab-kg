@@ -1,241 +1,379 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { Binary, Bug, CheckCircle2, Crown, Gamepad2, Music2, RotateCcw, Timer, Trophy, VolumeX, Zap } from 'lucide-react'
+import {
+  Binary,
+  Bug,
+  CheckCircle2,
+  Crown,
+  Gamepad2,
+  Keyboard,
+  LockKeyhole,
+  Music2,
+  RotateCcw,
+  Send,
+  Timer,
+  Trophy,
+  VolumeX,
+  Zap,
+} from 'lucide-react'
 import { apiGet, apiPost } from '../api'
 import { useAppContext } from '../contexts'
 
-const makeDecimal = (max = 31) => Math.floor(Math.random() * max) + 1
+const makeDecimal = (max = 31, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min
+const normalizeText = (value) => String(value || '').replace(/\r\n/g, '\n').trim()
+
+const FALLBACK_QUESTIONS = {
+  'bug-hunt': [
+    { title: 'What is output?', code: 'print(2 + 2 * 2)', choices: ['6', '8', '4'], correct: 0 },
+    { title: 'What is output?', code: "print('a' * 3)", choices: ['aaa', 'a3', 'error'], correct: 0 },
+    { title: 'What is output?', code: 'x = [1, 2]\nprint(len(x))', choices: ['1', '2', '3'], correct: 1 },
+  ],
+  'hacker-escape': [
+    {
+      title: 'Choose the condition that unlocks the admin door.',
+      code: "user = {'role': 'admin', 'active': True}",
+      choices: ["user['role'] == 'admin' and user['active']", "user['role'] == 'admin' or user['active']", "user['active'] == False"],
+      correct: 0,
+    },
+    {
+      title: 'Fix the index guard.',
+      code: "codes = ['alpha', 'beta', 'gamma']\nindex = 2",
+      choices: ['0 <= index < len(codes)', '0 <= index <= len(codes)', 'index > len(codes)'],
+      correct: 0,
+    },
+  ],
+  'typing-race': [
+    { title: 'Type the snippet exactly.', code: 'for item in items:\n    print(item.upper())', choices: [''], correct: 0 },
+    { title: 'Type the snippet exactly.', code: "squares = [n * n for n in range(10)]", choices: [''], correct: 0 },
+  ],
+  'output-guess': [
+    { title: 'What is the exact output?', code: 'values = [1, 2, 3]\nprint(sum(values))', choices: ['6', '123', '3'], correct: 0 },
+    { title: 'What is the exact output?', code: "name = 'Nova'\nprint(name[::-1])", choices: ['avoN', 'Nova', 'navo'], correct: 0 },
+  ],
+}
+
+function normalizeEngine(game, slug) {
+  const engine = game?.engine || slug
+  if (engine === 'binary-blitz' || engine === 'binary-blitz-2') return 'binary'
+  if (engine === 'typing-speed-code' || engine === 'typing-race' || slug === 'typing-race') return 'typing-race'
+  if (engine === 'output-guess' || slug === 'output-guess') return 'output-guess'
+  if (engine === 'hacker-escape' || slug === 'hacker-escape') return 'hacker-escape'
+  if (engine === 'bug-hunt' || slug === 'bug-hunt') return 'bug-hunt'
+  return 'quiz'
+}
+
+function GameModeIcon({ mode, size = 28 }) {
+  if (mode === 'binary') return <Binary size={size} />
+  if (mode === 'bug-hunt') return <Bug size={size} />
+  if (mode === 'hacker-escape') return <LockKeyhole size={size} />
+  if (mode === 'typing-race') return <Keyboard size={size} />
+  return <Gamepad2 size={size} />
+}
 
 export default function GameDetailPage() {
   const { slug } = useParams()
-  const { lang, t, auth, onOpenAuth } = useAppContext()
+  const { lang, t, auth, onOpenAuth, refreshSession, showToast } = useAppContext()
   const [data, setData] = useState(null)
+  const [loadError, setLoadError] = useState('')
   const [statusText, setStatusText] = useState('')
   const [feedback, setFeedback] = useState('')
   const [soundOn, setSoundOn] = useState(true)
   const [burst, setBurst] = useState(false)
-  const [binaryState, setBinaryState] = useState({
-    round: 1,
-    score: 0,
-    combo: 0,
-    decimal: makeDecimal(),
-    value: '',
-    done: false,
-  })
-  const [quizState, setQuizState] = useState({ index: 0, score: 0, combo: 0, done: false })
+  const [score, setScore] = useState(0)
+  const [combo, setCombo] = useState(0)
+  const [roundIndex, setRoundIndex] = useState(0)
+  const [answer, setAnswer] = useState('')
+  const [phase, setPhase] = useState('playing')
+  const [saved, setSaved] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(60)
+  const [decimal, setDecimal] = useState(makeDecimal())
 
   const load = useCallback(() => {
-    return apiGet(`/api/games/${slug}?lang=${lang}`).then(setData)
-  }, [slug, lang])
+    setLoadError('')
+    return apiGet(`/api/games/${slug}?lang=${lang}`)
+      .then(setData)
+      .catch((error) => {
+        setLoadError(error?.body?.detail || t('gameLoadFailed'))
+        setData({ game: null, leaderboard: [] })
+      })
+  }, [slug, lang, t])
 
   useEffect(() => {
-    load().catch(() => setData({ game: null, leaderboard: [] }))
-    setStatusText('')
-    setFeedback('')
-    setBinaryState({ round: 1, score: 0, combo: 0, decimal: makeDecimal(), value: '', done: false })
-    setQuizState({ index: 0, score: 0, combo: 0, done: false })
-  }, [load, slug, lang])
+    load()
+  }, [load])
+
+  const game = data?.game
+  const mode = useMemo(() => normalizeEngine(game, slug), [game, slug])
+  const rounds = mode === 'binary' ? Number(game?.config?.rounds || 5) : 0
+  const minDecimal = Number(game?.config?.minDecimal || 1)
+  const maxDecimal = Number(game?.config?.maxDecimal || (game?.engine === 'binary-blitz-2' ? 255 : 31))
+  const pointsPerCorrect = Number(game?.config?.pointsPerCorrect || 10)
+  const xpReward = Number(game?.xpReward || game?.config?.xpReward || 75)
+  const totalTime = Number(game?.timeLimit || game?.config?.timeLimit || (mode === 'typing-race' ? 60 : 75))
 
   const questions = useMemo(() => {
-    const apiQuestions = data?.game?.questions || []
-    if (apiQuestions.length) return apiQuestions
-    return [
-      { title: t('gameQuestionOutput'), code: 'print(2 + 2 * 2)', choices: ['6', '8', '4'], correct: 0 },
-      { title: t('gameQuestionOutput'), code: "print('a' * 3)", choices: ['aaa', 'a3', t('runtimeError')], correct: 0 },
-      { title: t('gameQuestionOutput'), code: 'x = [1, 2]\nprint(len(x))', choices: ['1', '2', '3'], correct: 1 },
-      { title: t('gameQuestionBool'), code: 'print(5 > 3 and 2 < 1)', choices: ['True', 'False', 'None'], correct: 1 },
-    ]
-  }, [data?.game?.questions, t])
+    const apiQuestions = game?.questions || []
+    const normalized = apiQuestions.length ? apiQuestions : FALLBACK_QUESTIONS[mode] || FALLBACK_QUESTIONS['bug-hunt']
+    return normalized.map((question, index) => ({
+      id: question.id || index,
+      title: question.title,
+      code: question.code || '',
+      choices: Array.isArray(question.choices) ? question.choices : [],
+      correct: Number(question.correct || 0),
+    }))
+  }, [game?.questions, mode])
 
-  const playTone = useCallback((kind) => {
-    if (!soundOn) return
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext
-      const ctx = new AudioContext()
-      const oscillator = ctx.createOscillator()
-      const gain = ctx.createGain()
-      oscillator.type = kind === 'success' ? 'triangle' : 'sawtooth'
-      oscillator.frequency.value = kind === 'success' ? 740 : 220
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.09, ctx.currentTime + 0.02)
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18)
-      oscillator.connect(gain)
-      gain.connect(ctx.destination)
-      oscillator.start()
-      oscillator.stop(ctx.currentTime + 0.2)
-    } catch {
-      // Audio is optional and depends on browser gesture permissions.
+  const totalRounds = mode === 'binary' ? rounds : questions.length
+
+  const resetGame = useCallback(() => {
+    setStatusText('')
+    setFeedback('')
+    setScore(0)
+    setCombo(0)
+    setRoundIndex(0)
+    setAnswer('')
+    setPhase('playing')
+    setSaved(false)
+    setSecondsLeft(totalTime)
+    setDecimal(makeDecimal(maxDecimal, minDecimal))
+  }, [maxDecimal, minDecimal, totalTime])
+
+  useEffect(() => {
+    resetGame()
+  }, [resetGame, slug, lang])
+
+  useEffect(() => {
+    if (!data?.game || phase !== 'playing') return undefined
+    const timer = window.setInterval(() => {
+      setSecondsLeft((value) => {
+        if (value <= 1) {
+          window.clearInterval(timer)
+          setPhase('lost')
+          return 0
+        }
+        return value - 1
+      })
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [data?.game, phase])
+
+  const playTone = useCallback(
+    (kind) => {
+      if (!soundOn) return
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext
+        const ctx = new AudioContext()
+        const oscillator = ctx.createOscillator()
+        const gain = ctx.createGain()
+        oscillator.type = kind === 'success' ? 'triangle' : 'sawtooth'
+        oscillator.frequency.value = kind === 'success' ? 740 : 220
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime)
+        gain.gain.exponentialRampToValueAtTime(0.09, ctx.currentTime + 0.02)
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18)
+        oscillator.connect(gain)
+        gain.connect(ctx.destination)
+        oscillator.start()
+        oscillator.stop(ctx.currentTime + 0.2)
+      } catch {
+        // Browser audio can be blocked until a user gesture; the game still works.
+      }
+    },
+    [soundOn],
+  )
+
+  const celebrate = useCallback(
+    (message) => {
+      setFeedback(message)
+      setBurst(true)
+      playTone('success')
+      window.setTimeout(() => setBurst(false), 850)
+    },
+    [playTone],
+  )
+
+  const saveScore = useCallback(
+    async (finalScore) => {
+      if (saved || finalScore <= 0) return
+      if (!auth.authenticated) {
+        setStatusText(t('loginToSaveScore'))
+        return
+      }
+
+      setSaved(true)
+      try {
+        const response = await apiPost(`/api/games/${slug}/score`, {
+          score: finalScore,
+          combo,
+          durationSeconds: totalTime - secondsLeft,
+        })
+        await refreshSession()
+        await load()
+        setStatusText(`${t('scoreSaved')} ${response?.xpAwarded ? `+${response.xpAwarded} XP` : ''}`)
+        if (response?.xpAwarded) {
+          showToast({ eyebrow: t('playedGame'), title: game?.title || t('gamesTitle'), xp: response.xpAwarded })
+        }
+      } catch (error) {
+        setSaved(false)
+        setStatusText(error?.status === 401 ? t('loginToSaveScore') : t('scoreSaveFailed'))
+      }
+    },
+    [auth.authenticated, combo, game?.title, load, refreshSession, saved, secondsLeft, showToast, slug, t, totalTime],
+  )
+
+  useEffect(() => {
+    if ((phase === 'won' || phase === 'lost') && score > 0) {
+      saveScore(score)
     }
-  }, [soundOn])
+  }, [phase, saveScore, score])
 
-  const celebrate = useCallback((message) => {
-    setFeedback(message)
-    setBurst(true)
-    window.setTimeout(() => setBurst(false), 850)
-  }, [])
+  const finishRound = (correct, expectedText = '') => {
+    const nextCombo = correct ? combo + 1 : 0
+    const bonus = correct ? Math.max(0, nextCombo - 1) * 2 : 0
+    const nextScore = score + (correct ? pointsPerCorrect + bonus : 0)
+    const nextRound = roundIndex + 1
+
+    if (correct) {
+      celebrate(t('gameCorrectFeedback'))
+    } else {
+      playTone('error')
+      setFeedback(expectedText ? `${t('gameWrongFeedback')} ${expectedText}` : t('gameWrongTryAgain'))
+    }
+
+    setScore(nextScore)
+    setCombo(nextCombo)
+    setAnswer('')
+
+    if (nextRound >= totalRounds) {
+      setPhase(nextScore > 0 ? 'won' : 'lost')
+      return
+    }
+
+    setRoundIndex(nextRound)
+    setDecimal(makeDecimal(maxDecimal, minDecimal))
+  }
+
+  const onBinarySubmit = (event) => {
+    event.preventDefault()
+    if (phase !== 'playing') return
+    const expected = decimal.toString(2)
+    finishRound(normalizeText(answer) === expected, expected)
+  }
+
+  const onTypingSubmit = (event) => {
+    event.preventDefault()
+    if (phase !== 'playing') return
+    const question = questions[Math.min(roundIndex, questions.length - 1)]
+    const expected = normalizeText(question.code)
+    const correct = normalizeText(answer) === expected
+    if (!correct) {
+      playTone('error')
+      setCombo(0)
+      setFeedback(t('typingRaceMismatch'))
+      return
+    }
+    finishRound(true)
+  }
+
+  const onChoice = (choiceIndex) => {
+    if (phase !== 'playing') return
+    const question = questions[Math.min(roundIndex, questions.length - 1)]
+    const expected = question.choices[question.correct]
+    finishRound(choiceIndex === question.correct, expected)
+  }
 
   if (!data) return <p className="premium-card">{t('loading')}</p>
-  if (!data.game) return <p className="premium-card">{t('gameUnknown')}</p>
+  if (loadError || !data.game) return <p className="premium-card alert error">{loadError || t('gameUnknown')}</p>
 
-  const game = data.game
-  const engine = game.engine || slug
-  const isBinary = engine === 'binary-blitz' || engine === 'binary-blitz-2'
-  const rounds = engine === 'binary-blitz-2' ? 8 : Number(game.config?.rounds || 5)
-  const maxDecimal = engine === 'binary-blitz-2' ? 255 : Number(game.config?.maxDecimal || 31)
-  const pointsPerCorrect = Number(game.config?.pointsPerCorrect || 10)
+  const currentQuestion = questions[Math.min(roundIndex, questions.length - 1)]
+  const progress = Math.min(100, Math.round(((roundIndex + (phase === 'playing' ? 0 : 1)) / Math.max(1, totalRounds)) * 100))
+  const timePercent = Math.max(0, Math.round((secondsLeft / Math.max(1, totalTime)) * 100))
 
-  const saveScore = async (score) => {
-    if (!auth.authenticated) {
-      setStatusText(t('loginToSaveScore'))
-      return
-    }
-    await apiPost(`/api/games/${slug}/score`, { score })
-    await load()
-    setStatusText(t('scoreSaved'))
-  }
+  const renderHud = () => (
+    <div className="game-hud">
+      <span><Trophy size={16} /> {t('score')}: {score}</span>
+      <span><Zap size={16} /> {t('gameCombo')}: x{combo || 1}</span>
+      <span><Timer size={16} /> {t('round')} {Math.min(roundIndex + 1, totalRounds)}/{totalRounds}</span>
+      <span><Zap size={16} /> {xpReward} XP</span>
+    </div>
+  )
 
-  const onBinarySubmit = async (event) => {
-    event.preventDefault()
-    if (binaryState.done) return
-    const expected = binaryState.decimal.toString(2)
-    const correct = binaryState.value.trim() === expected
-    const nextRound = binaryState.round + 1
-    const nextCombo = correct ? binaryState.combo + 1 : 0
-    const comboBonus = correct ? Math.max(0, nextCombo - 1) * 2 : 0
-    const nextScore = binaryState.score + (correct ? pointsPerCorrect + comboBonus : 0)
-
-    if (correct) {
-      playTone('success')
-      celebrate(t('gameCorrectFeedback'))
-    } else {
-      playTone('error')
-      setFeedback(`${t('gameWrongFeedback')} ${expected}`)
-    }
-
-    if (nextRound > rounds) {
-      setBinaryState((prev) => ({ ...prev, score: nextScore, combo: nextCombo, done: true, value: '' }))
-      await saveScore(nextScore)
-      return
-    }
-
-    setBinaryState({
-      round: nextRound,
-      score: nextScore,
-      combo: nextCombo,
-      decimal: makeDecimal(maxDecimal),
-      value: '',
-      done: false,
-    })
-  }
-
-  const onQuizChoose = async (choiceIndex) => {
-    if (quizState.done) return
-    const question = questions[quizState.index]
-    const correct = choiceIndex === question.correct
-    const nextIndex = quizState.index + 1
-    const nextCombo = correct ? quizState.combo + 1 : 0
-    const nextScore = quizState.score + (correct ? pointsPerCorrect + Math.max(0, nextCombo - 1) * 2 : 0)
-
-    if (correct) {
-      playTone('success')
-      celebrate(t('gameCorrectFeedback'))
-    } else {
-      playTone('error')
-      setFeedback(t('gameWrongTryAgain'))
-    }
-
-    if (nextIndex >= questions.length) {
-      setQuizState({ index: nextIndex, score: nextScore, combo: nextCombo, done: true })
-      await saveScore(nextScore)
-      return
-    }
-    setQuizState({ index: nextIndex, score: nextScore, combo: nextCombo, done: false })
-  }
-
-  const resetGame = () => {
-    setFeedback('')
-    setStatusText('')
-    setBinaryState({ round: 1, score: 0, combo: 0, decimal: makeDecimal(maxDecimal), value: '', done: false })
-    setQuizState({ index: 0, score: 0, combo: 0, done: false })
-  }
-
-  const renderHud = () => {
-    const currentScore = isBinary ? binaryState.score : quizState.score
-    const combo = isBinary ? binaryState.combo : quizState.combo
-    const currentRound = isBinary ? binaryState.round : Math.min(questions.length, quizState.index + 1)
-    const totalRounds = isBinary ? rounds : questions.length
-    return (
-      <div className="game-hud">
-        <span><Trophy size={16} /> {t('score')}: {currentScore}</span>
-        <span><Zap size={16} /> {t('gameCombo')}: x{combo || 1}</span>
-        <span><Timer size={16} /> {t('round')} {currentRound}/{totalRounds}</span>
-      </div>
-    )
-  }
+  const renderFinish = () => (
+    <div className={`game-finish ${phase === 'won' ? 'is-win' : 'is-lose'}`}>
+      <Crown size={42} />
+      <h2>{phase === 'won' ? t('gameWinTitle') : t('gameLoseTitle')}</h2>
+      <p>
+        {t('finalScore')}: <strong>{score}</strong>
+      </p>
+      <button className="premium-button" type="button" onClick={resetGame}>
+        <RotateCcw size={16} />
+        {t('restart')}
+      </button>
+    </div>
+  )
 
   const renderBinary = () => (
     <div className="game-stage">
-      {!binaryState.done ? (
+      {phase !== 'playing' ? renderFinish() : (
         <>
           <div className="binary-target">
             <span>{t('convertHintPrefix')}</span>
-            <strong>{binaryState.decimal}</strong>
+            <strong>{decimal}</strong>
             <small>{t('convertHintSuffix')}</small>
           </div>
           <form className="inline-form game-answer-form" onSubmit={onBinarySubmit}>
-            <input value={binaryState.value} onChange={(event) => setBinaryState((prev) => ({ ...prev, value: event.target.value }))} />
+            <input value={answer} onChange={(event) => setAnswer(event.target.value)} autoComplete="off" />
             <button className="btn" type="submit">
               <CheckCircle2 size={16} />
               {t('check')}
             </button>
           </form>
         </>
-      ) : (
-        <div className="game-finish">
-          <Crown size={42} />
-          <p>
-            {t('finalScore')}: <strong>{binaryState.score}</strong>
-          </p>
-          <button className="premium-button" type="button" onClick={resetGame}>
-            <RotateCcw size={16} />
-            {t('restart')}
-          </button>
-        </div>
       )}
     </div>
   )
 
-  const renderQuiz = () => {
-    const question = questions[Math.min(quizState.index, questions.length - 1)]
-    return (
-      <div className="game-stage">
-        {!quizState.done ? (
-          <>
-            <p className="game-question-title">{question.title}</p>
-            <pre>{question.code}</pre>
-            <div className="choices game-choices">
-              {question.choices.map((choice, index) => (
-                <button key={`${choice}-${index}`} type="button" className="btn btn-ghost" onClick={() => onQuizChoose(index)}>
-                  {choice}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="game-finish">
-            <Crown size={42} />
-            <p>
-              {t('finalScore')}: <strong>{quizState.score}</strong>
-            </p>
-            <button className="premium-button" type="button" onClick={resetGame}>
-              <RotateCcw size={16} />
-              {t('restart')}
+  const renderTyping = () => (
+    <div className="game-stage">
+      {phase !== 'playing' ? renderFinish() : (
+        <>
+          <p className="game-question-title">{currentQuestion.title}</p>
+          <pre>{currentQuestion.code}</pre>
+          <form className="form-stack" onSubmit={onTypingSubmit}>
+            <textarea
+              className="game-answer-textarea"
+              rows={5}
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              spellCheck="false"
+            />
+            <button className="premium-button" type="submit">
+              <Send size={16} />
+              {t('submit')}
             </button>
+          </form>
+        </>
+      )}
+    </div>
+  )
+
+  const renderQuiz = () => (
+    <div className="game-stage">
+      {phase !== 'playing' ? renderFinish() : (
+        <>
+          <p className="game-question-title">{currentQuestion.title}</p>
+          {mode === 'hacker-escape' && <p className="game-lock-label">{t('hackerEscapeStage')} {roundIndex + 1}</p>}
+          <pre>{currentQuestion.code}</pre>
+          <div className="choices game-choices">
+            {currentQuestion.choices.map((choice, index) => (
+              <button key={`${choice}-${index}`} type="button" className="btn btn-ghost" onClick={() => onChoice(index)}>
+                {choice}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
-    )
-  }
+        </>
+      )}
+    </div>
+  )
 
   return (
     <div className="page-grid game-detail-grid">
@@ -243,7 +381,7 @@ export default function GameDetailPage() {
         <div className="game-topbar">
           <div>
             <p className="section-eyebrow">{t('gameArenaEyebrow')}</p>
-            <h1>{game.title}</h1>
+            <h1><GameModeIcon mode={mode} size={28} /> {game.title}</h1>
             <p>{game.description}</p>
           </div>
           <button className="btn btn-ghost sound-toggle" type="button" onClick={() => setSoundOn((value) => !value)}>
@@ -253,8 +391,13 @@ export default function GameDetailPage() {
         </div>
 
         {renderHud()}
-        <div className="combo-meter">
-          <span style={{ width: `${Math.min(100, ((isBinary ? binaryState.combo : quizState.combo) || 1) * 18)}%` }} />
+        <div className="game-progress-grid">
+          <div className="combo-meter" aria-label={t('dashboardProgress')}>
+            <span style={{ width: `${progress}%` }} />
+          </div>
+          <div className="combo-meter game-timer-meter" aria-label={t('timer')}>
+            <span style={{ width: `${timePercent}%` }} />
+          </div>
         </div>
 
         {game.externalUrl && (
@@ -263,8 +406,12 @@ export default function GameDetailPage() {
             {t('gameOpenExternal')}
           </a>
         )}
-        {isBinary ? renderBinary() : renderQuiz()}
-        {feedback && <p className="game-feedback">{feedback}</p>}
+
+        {mode === 'binary' && renderBinary()}
+        {mode === 'typing-race' && renderTyping()}
+        {mode !== 'binary' && mode !== 'typing-race' && renderQuiz()}
+
+        {feedback && <p className={`game-feedback ${phase === 'lost' ? 'is-error' : ''}`}>{feedback}</p>}
         {statusText && <p className="meta-line">{statusText}</p>}
         {!auth.authenticated && (
           <button className="btn btn-ghost" type="button" onClick={() => onOpenAuth('login')}>

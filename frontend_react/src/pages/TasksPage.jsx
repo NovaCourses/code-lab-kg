@@ -24,10 +24,17 @@ const taskTypeFor = (task, index, t) => {
 export default function TasksPage() {
   const { lang, t } = useAppContext()
   const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    apiGet(`/api/tasks?lang=${lang}`).then((data) => setItems(data.items || []))
-  }, [lang])
+    setLoading(true)
+    setError('')
+    apiGet(`/api/tasks?lang=${lang}`)
+      .then((data) => setItems(data.items || []))
+      .catch(() => setError(t('tasksLoadFailed')))
+      .finally(() => setLoading(false))
+  }, [lang, t])
 
   return (
     <section className="page-grid tasks-modern-page">
@@ -47,10 +54,12 @@ export default function TasksPage() {
       </div>
 
       <div className="cards-grid task-card-grid">
+        {loading && <p className="premium-card empty-state-card">{t('loading')}</p>}
+        {error && <p className="premium-card empty-state-card alert error">{error}</p>}
         {items.map((task, index) => {
           const Icon = TASK_TYPE_ICONS[index % TASK_TYPE_ICONS.length]
           const type = taskTypeFor(task, index, t)
-          const xp = task.difficulty === 'hard' ? 120 : task.difficulty === 'medium' ? 80 : 50
+          const xp = task.xpReward || (task.difficulty === 'hard' ? 120 : task.difficulty === 'medium' ? 80 : 50)
           const progress = Math.min(92, 24 + index * 18)
 
           return (
@@ -77,7 +86,7 @@ export default function TasksPage() {
                 </span>
                 <span>
                   <Clock3 size={15} />
-                  {task.difficulty === 'hard' ? 18 : task.difficulty === 'medium' ? 12 : 8} {t('minuteShort')}
+                  {task.timeLimitMinutes || (task.difficulty === 'hard' ? 18 : task.difficulty === 'medium' ? 12 : 8)} {t('minuteShort')}
                 </span>
                 <span>
                   <Zap size={15} />
@@ -94,7 +103,7 @@ export default function TasksPage() {
             </motion.article>
           )
         })}
-        {!items.length && <p className="premium-card empty-state-card">{t('emptyTasks')}</p>}
+        {!loading && !error && !items.length && <p className="premium-card empty-state-card">{t('emptyTasks')}</p>}
       </div>
     </section>
   )

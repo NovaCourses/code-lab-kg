@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Footer, AuthModal, AIAssistant } from './components'
@@ -50,6 +50,9 @@ function AppShellContent() {
 
   useEffect(() => {
     setCommandOpen(false)
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      setSidebarCollapsed(true)
+    }
   }, [location.pathname])
 
   useEffect(() => {
@@ -84,12 +87,18 @@ function AppShellContent() {
     setAuthModalOpen(true)
   }, [location.search, t])
 
-  const onOpenAuthModal = (mode = 'login') => {
+  const onOpenAuthModal = useCallback((mode = 'login') => {
     setAuthError('')
     setGoogleError('')
     setAuthMode(mode)
     setAuthModalOpen(true)
-  }
+  }, [])
+
+  useEffect(() => {
+    const handleAuthRequest = (event) => onOpenAuthModal(event.detail?.mode || 'login')
+    window.addEventListener('novacode:auth', handleAuthRequest)
+    return () => window.removeEventListener('novacode:auth', handleAuthRequest)
+  }, [onOpenAuthModal])
 
   const onCloseAuthModal = () => {
     setAuthModalOpen(false)

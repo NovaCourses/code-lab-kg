@@ -35,6 +35,14 @@ export function AppProvider({ children }) {
     })
   }, [])
 
+  const onOpenAuth = useCallback((mode = 'login') => {
+    window.dispatchEvent(new CustomEvent('novacode:auth', { detail: { mode } }))
+  }, [])
+
+  const showToast = useCallback((detail) => {
+    window.dispatchEvent(new CustomEvent('novacode:toast', { detail }))
+  }, [])
+
   useEffect(() => {
     document.body.dataset.theme = theme
     localStorage.setItem('novacode-theme', theme)
@@ -74,6 +82,8 @@ export function AppProvider({ children }) {
     t,
     auth: session,
     refreshSession,
+    onOpenAuth,
+    showToast,
   }
 
   return <AppContext.Provider value={context}>{children}</AppContext.Provider>

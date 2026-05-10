@@ -4,13 +4,29 @@ import { Sparkles, Trophy, Zap } from 'lucide-react'
 
 export default function AchievementToast() {
   const [visible, setVisible] = useState(false)
+  const [toast, setToast] = useState({
+    eyebrow: 'Achievement unlocked',
+    title: 'Daily XP streak started',
+    xp: 50,
+  })
 
   useEffect(() => {
-    const showTimer = window.setTimeout(() => setVisible(true), 1800)
-    const hideTimer = window.setTimeout(() => setVisible(false), 6200)
+    let hideTimer
+    const showToast = (event) => {
+      const nextToast = event.detail || {}
+      setToast({
+        eyebrow: nextToast.eyebrow || 'Achievement unlocked',
+        title: nextToast.title || 'XP earned',
+        xp: Number(nextToast.xp || 0),
+      })
+      setVisible(true)
+      window.clearTimeout(hideTimer)
+      hideTimer = window.setTimeout(() => setVisible(false), 4200)
+    }
 
+    window.addEventListener('novacode:toast', showToast)
     return () => {
-      window.clearTimeout(showTimer)
+      window.removeEventListener('novacode:toast', showToast)
       window.clearTimeout(hideTimer)
     }
   }, [])
@@ -34,13 +50,15 @@ export default function AchievementToast() {
             <Trophy size={22} />
           </div>
           <div className="achievement-toast-copy">
-            <span>Achievement unlocked</span>
-            <strong>Daily XP streak started</strong>
+            <span>{toast.eyebrow}</span>
+            <strong>{toast.title}</strong>
           </div>
-          <div className="achievement-toast-xp">
-            <Zap size={16} />
-            +50 XP
-          </div>
+          {toast.xp > 0 && (
+            <div className="achievement-toast-xp">
+              <Zap size={16} />
+              +{toast.xp} XP
+            </div>
+          )}
           <Sparkles className="achievement-spark" size={18} />
         </motion.div>
       )}

@@ -51,6 +51,10 @@ DEMO_TASKS = [
             "для кратных 3 и 5 — FizzBuzz."
         ),
         "difficulty": "easy",
+        "hint_en": "Use a loop from 1 to 100 and check divisibility by 15 before 3 or 5.",
+        "hint_ru": "Use a loop from 1 to 100 and check divisibility by 15 before 3 or 5.",
+        "xp_reward": 50,
+        "time_limit_minutes": 8,
         "solution_keywords": "for,if,3,5,fizzbuzz",
     },
     {
@@ -59,6 +63,10 @@ DEMO_TASKS = [
         "description_en": "Return reversed string for input text `hello`.",
         "description_ru": "Верните строку `hello` в обратном порядке.",
         "difficulty": "easy",
+        "hint_en": "Python slices can step backwards with -1.",
+        "hint_ru": "Python slices can step backwards with -1.",
+        "xp_reward": 50,
+        "time_limit_minutes": 6,
         "solution_text": "olleh",
     },
     {
@@ -67,6 +75,10 @@ DEMO_TASKS = [
         "description_en": 'Create GET endpoint returning JSON `{ "status": "ok" }`.',
         "description_ru": 'Создайте GET-эндпоинт, который возвращает JSON `{ "status": "ok" }`.',
         "difficulty": "medium",
+        "hint_en": "Use a route decorator and return a dict with status set to ok.",
+        "hint_ru": "Use a route decorator and return a dict with status set to ok.",
+        "xp_reward": 80,
+        "time_limit_minutes": 12,
         "solution_keywords": "get,status,ok,json",
     },
 ]
@@ -121,6 +133,22 @@ DEMO_GAMES = [
         "engine": "hacker-escape",
     },
     {
+        "slug": "typing-race",
+        "title_en": "Typing Race",
+        "title_ru": "Typing Race",
+        "description_en": "Type code fragments quickly and accurately to build a combo.",
+        "description_ru": "Type code fragments quickly and accurately to build a combo.",
+        "engine": "typing-race",
+    },
+    {
+        "slug": "output-guess",
+        "title_en": "Output Guess",
+        "title_ru": "Output Guess",
+        "description_en": "Read code, predict the exact output, and lock in the result.",
+        "description_ru": "Read code, predict the exact output, and lock in the result.",
+        "engine": "output-guess",
+    },
+    {
         "slug": "typing-speed-code",
         "title_en": "Typing Speed Code",
         "title_ru": "Скоростная печать кода",
@@ -142,12 +170,12 @@ DEMO_GAME_SETTINGS = {
     "binary-blitz": {
         "image_url": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=80",
         "external_url": None,
-        "config": {"rounds": 5, "minDecimal": 1, "maxDecimal": 31, "pointsPerCorrect": 10},
+        "config": {"rounds": 5, "minDecimal": 1, "maxDecimal": 31, "pointsPerCorrect": 10, "timeLimit": 60, "xpReward": 75},
     },
     "bug-hunt": {
         "image_url": "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1400&q=80",
         "external_url": None,
-        "config": {"pointsPerCorrect": 10},
+        "config": {"pointsPerCorrect": 10, "timeLimit": 75, "xpReward": 75},
     },
     "code-runner-race": {
         "image_url": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1400&q=80",
@@ -167,7 +195,17 @@ DEMO_GAME_SETTINGS = {
     "hacker-escape": {
         "image_url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1400&q=80",
         "external_url": None,
-        "config": {"pointsPerCorrect": 12},
+        "config": {"pointsPerCorrect": 12, "timeLimit": 90, "xpReward": 90},
+    },
+    "typing-race": {
+        "image_url": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=80",
+        "external_url": None,
+        "config": {"pointsPerCorrect": 15, "timeLimit": 60, "xpReward": 80},
+    },
+    "output-guess": {
+        "image_url": "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?auto=format&fit=crop&w=1400&q=80",
+        "external_url": None,
+        "config": {"pointsPerCorrect": 12, "timeLimit": 75, "xpReward": 80},
     },
     "typing-speed-code": {
         "image_url": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=80",
@@ -218,6 +256,93 @@ DEMO_GAME_QUESTIONS = {
             "options_en": ["True", "False", "None"],
             "options_ru": ["True", "False", "None"],
             "correct_index": 1,
+        },
+    ],
+    "hacker-escape": [
+        {
+            "position": 1,
+            "prompt_en": "Stage 1: choose the condition that unlocks only admins.",
+            "prompt_ru": "Stage 1: choose the condition that unlocks only admins.",
+            "code_snippet": "user = {'role': 'admin', 'active': True}\n# door opens when user is admin and active",
+            "options_en": ["user['role'] == 'admin' and user['active']", "user['role'] == 'admin' or user['active']", "user['role'] != 'admin'"],
+            "options_ru": ["user['role'] == 'admin' and user['active']", "user['role'] == 'admin' or user['active']", "user['role'] != 'admin'"],
+            "correct_index": 0,
+        },
+        {
+            "position": 2,
+            "prompt_en": "Stage 2: which expression fixes the off-by-one check?",
+            "prompt_ru": "Stage 2: which expression fixes the off-by-one check?",
+            "code_snippet": "codes = ['alpha', 'beta', 'gamma']\nindex = 2\n# index must be valid",
+            "options_en": ["0 <= index < len(codes)", "0 <= index <= len(codes)", "index > len(codes)"],
+            "options_ru": ["0 <= index < len(codes)", "0 <= index <= len(codes)", "index > len(codes)"],
+            "correct_index": 0,
+        },
+        {
+            "position": 3,
+            "prompt_en": "Final lock: pick the safe token comparison.",
+            "prompt_ru": "Final lock: pick the safe token comparison.",
+            "code_snippet": "token = 'nova-42'\nexpected = 'nova-42'",
+            "options_en": ["token == expected", "token = expected", "token in 'expected'"],
+            "options_ru": ["token == expected", "token = expected", "token in 'expected'"],
+            "correct_index": 0,
+        },
+    ],
+    "typing-race": [
+        {
+            "position": 1,
+            "prompt_en": "Type this Python line exactly.",
+            "prompt_ru": "Type this Python line exactly.",
+            "code_snippet": "for item in items:\n    print(item.upper())",
+            "options_en": [""],
+            "options_ru": [""],
+            "correct_index": 0,
+        },
+        {
+            "position": 2,
+            "prompt_en": "Type this FastAPI route exactly.",
+            "prompt_ru": "Type this FastAPI route exactly.",
+            "code_snippet": "@app.get('/health')\ndef health():\n    return {'status': 'ok'}",
+            "options_en": [""],
+            "options_ru": [""],
+            "correct_index": 0,
+        },
+        {
+            "position": 3,
+            "prompt_en": "Type this list comprehension exactly.",
+            "prompt_ru": "Type this list comprehension exactly.",
+            "code_snippet": "squares = [n * n for n in range(10)]",
+            "options_en": [""],
+            "options_ru": [""],
+            "correct_index": 0,
+        },
+    ],
+    "output-guess": [
+        {
+            "position": 1,
+            "prompt_en": "What is the exact output?",
+            "prompt_ru": "What is the exact output?",
+            "code_snippet": "values = [1, 2, 3]\nprint(sum(values))",
+            "options_en": ["6", "123", "3"],
+            "options_ru": ["6", "123", "3"],
+            "correct_index": 0,
+        },
+        {
+            "position": 2,
+            "prompt_en": "What is the exact output?",
+            "prompt_ru": "What is the exact output?",
+            "code_snippet": "name = 'Nova'\nprint(name[::-1])",
+            "options_en": ["avoN", "Nova", "navo"],
+            "options_ru": ["avoN", "Nova", "navo"],
+            "correct_index": 0,
+        },
+        {
+            "position": 3,
+            "prompt_en": "What is the exact output?",
+            "prompt_ru": "What is the exact output?",
+            "code_snippet": "print(bool('False'))",
+            "options_en": ["True", "False", "Error"],
+            "options_ru": ["True", "False", "Error"],
+            "correct_index": 0,
         },
     ]
 }
@@ -294,6 +419,45 @@ def ensure_lesson_admin_columns() -> None:
         for column_name, column_type in columns.items():
             if column_name not in existing:
                 connection.execute(text(f"ALTER TABLE lessons ADD COLUMN {column_name} {column_type}"))
+
+
+def ensure_table_columns(table_name: str, columns: dict[str, str]) -> None:
+    with engine.begin() as connection:
+        inspector = inspect(connection)
+        if table_name not in inspector.get_table_names():
+            return
+        existing = {column["name"] for column in inspector.get_columns(table_name)}
+        for column_name, column_type in columns.items():
+            if column_name not in existing:
+                connection.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"))
+
+
+def ensure_task_gameplay_columns() -> None:
+    ensure_table_columns(
+        "tasks",
+        {
+            "difficulty": "VARCHAR(50) NOT NULL DEFAULT 'easy'",
+            "hint_en": "TEXT",
+            "hint_ru": "TEXT",
+            "xp_reward": "INTEGER NOT NULL DEFAULT 50",
+            "time_limit_minutes": "INTEGER NOT NULL DEFAULT 8",
+            "solution_text": "TEXT",
+            "solution_keywords": "TEXT",
+        },
+    )
+
+
+def ensure_user_gamification_columns() -> None:
+    ensure_table_columns(
+        "users",
+        {
+            "xp": "INTEGER NOT NULL DEFAULT 0",
+            "current_streak": "INTEGER NOT NULL DEFAULT 0",
+            "longest_streak": "INTEGER NOT NULL DEFAULT 0",
+            "last_activity_date": "DATE",
+            "role": "VARCHAR(30) NOT NULL DEFAULT 'user'",
+        },
+    )
 
 
 def ensure_user_role_column() -> None:
@@ -389,6 +553,10 @@ def seed_tasks() -> None:
                     description_en=payload["description_en"],
                     description_ru=payload["description_ru"],
                     difficulty=payload["difficulty"],
+                    hint_en=payload.get("hint_en"),
+                    hint_ru=payload.get("hint_ru"),
+                    xp_reward=payload.get("xp_reward", 50),
+                    time_limit_minutes=payload.get("time_limit_minutes", 8),
                     solution_text=payload.get("solution_text"),
                     solution_keywords=payload.get("solution_keywords"),
                 )
@@ -441,7 +609,15 @@ def seed_game_settings_and_questions() -> None:
                     external_url=setting_payload.get("external_url"),
                     config_json=json.dumps(setting_payload.get("config")) if setting_payload.get("config") is not None else None,
                 )
-                db.add(setting)
+            else:
+                setting.image_url = setting_payload.get("image_url") or setting.image_url
+                setting.external_url = setting_payload.get("external_url")
+                setting.config_json = (
+                    json.dumps(setting_payload.get("config"))
+                    if setting_payload.get("config") is not None
+                    else setting.config_json
+                )
+            db.add(setting)
 
         for slug, questions in DEMO_GAME_QUESTIONS.items():
             game = game_by_slug.get(slug)
@@ -503,9 +679,18 @@ def sync_existing_multilang_content() -> None:
                 task.description_ru = seeded["description_ru"]
                 task.title = seeded["title_en"]
                 task.description = seeded["description_en"]
+                task.difficulty = seeded.get("difficulty", task.difficulty or "easy")
+                task.hint_en = seeded.get("hint_en") or task.hint_en
+                task.hint_ru = seeded.get("hint_ru") or task.hint_ru
+                task.xp_reward = seeded.get("xp_reward", task.xp_reward or 50)
+                task.time_limit_minutes = seeded.get("time_limit_minutes", task.time_limit_minutes or 8)
+                task.solution_text = seeded.get("solution_text") or task.solution_text
+                task.solution_keywords = seeded.get("solution_keywords") or task.solution_keywords
             else:
                 task.title_ru = task.title_ru or task.title_en or task.title
                 task.description_ru = task.description_ru or task.description_en or task.description
+                task.xp_reward = task.xp_reward or 50
+                task.time_limit_minutes = task.time_limit_minutes or 8
             db.add(task)
 
         db.commit()
@@ -568,6 +753,8 @@ def bootstrap() -> None:
     create_tables()
     ensure_multilang_columns()
     ensure_lesson_admin_columns()
+    ensure_task_gameplay_columns()
+    ensure_user_gamification_columns()
     ensure_user_role_column()
     ensure_admin_indexes()
     seed_admin()

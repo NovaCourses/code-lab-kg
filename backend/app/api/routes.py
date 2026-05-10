@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from urllib.parse import quote_plus
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -18,8 +18,9 @@ from app.entities.home.models import HomeSliderItem
 from app.entities.lessons.models import LessonVideoLink
 from app.entities.lessons.service import get_lesson, list_lessons, to_embed_url
 from app.entities.localization.service import resolve_language
+from app.entities.tasks.models import TaskSubmission
 from app.entities.tasks.service import get_task, get_user_submissions_for_task, list_tasks, submit_answer
-from app.entities.users.models import User
+from app.entities.users.models import User, UserActivity
 from app.entities.users.schemas import UserRegister
 from app.entities.users.service import (
     authenticate_user,
@@ -39,6 +40,8 @@ SUPPORTED_GAME_ENGINES = {
     "memory-syntax",
     "hacker-escape",
     "typing-speed-code",
+    "typing-race",
+    "output-guess",
     "quiz-arena",
     "external",
 }
@@ -66,6 +69,8 @@ class TaskAnswerPayload(BaseModel):
 
 class ScorePayload(BaseModel):
     score: int = Field(ge=0, le=1_000_000)
+    combo: int | None = Field(default=None, ge=0, le=1000)
+    durationSeconds: int | None = Field(default=None, ge=0, le=24 * 60 * 60)
 
 
 def _get_lang(request: Request, lang: str | None) -> str:
@@ -93,6 +98,34 @@ def _safe_json_loads(raw: str | None, fallback):
         return json.loads(raw)
     except Exception:
         return fallback
+
+
+def _task_xp_reward(task) -> int:
+    fallback = 120 if task.difficulty == "hard" else 80 if task.difficulty == "medium" else 50
+    return max(0, int(getattr(task, "xp_reward", None) or fallback))
+
+
+def _award_user_xp(db: Session, user: User, amount: int, activity_type: str) -> int:
+    amount = max(0, int(amount or 0))
+    if amount <= 0:
+        return 0
+
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    if user.last_activity_date == today:
+        next_streak = user.current_streak or 1
+    elif user.last_activity_date == yesterday:
+        next_streak = (user.current_streak or 0) + 1
+    else:
+        next_streak = 1
+
+    user.xp = (user.xp or 0) + amount
+    user.current_streak = next_streak
+    user.longest_streak = max(user.longest_streak or 0, next_streak)
+    user.last_activity_date = today
+    db.add(user)
+    db.add(UserActivity(user_id=user.id, activity_type=activity_type, xp_gained=amount))
+    return amount
 
 
 def _serialize_user(user: User) -> dict:
@@ -177,6 +210,9 @@ def _serialize_task(task, lang: str) -> dict:
         "title": task.localized_title(lang),
         "description": task.localized_description(lang),
         "difficulty": task.difficulty,
+        "hint": task.localized_hint(lang) if hasattr(task, "localized_hint") else "",
+        "xpReward": _task_xp_reward(task),
+        "timeLimitMinutes": int(getattr(task, "time_limit_minutes", None) or 8),
         "createdAt": _to_iso(task.created_at),
     }
 
@@ -234,6 +270,8 @@ def _serialize_game(game: Game, lang: str, include_content: bool = False) -> dic
         "imageUrl": setting.image_url if setting else None,
         "externalUrl": setting.external_url if setting else None,
         "isActive": game.is_active,
+        "xpReward": int(config.get("xpReward") or config.get("xp_reward") or 75),
+        "timeLimit": int(config.get("timeLimit") or config.get("time_limit") or 60),
     }
     if include_content:
         payload["config"] = config
@@ -457,11 +495,29 @@ def api_submit_task(
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="task_not_found")
 
+    had_correct_submission = db.scalar(
+        select(TaskSubmission.id)
+        .where(
+            TaskSubmission.task_id == task.id,
+            TaskSubmission.user_id == current_user.id,
+            TaskSubmission.is_correct.is_(True),
+        )
+        .limit(1)
+    )
     submission = submit_answer(db, task=task, user_id=current_user.id, answer=payload.answer)
+    xp_reward = _task_xp_reward(task)
+    xp_awarded = 0
+    if submission.is_correct and not had_correct_submission:
+        xp_awarded = _award_user_xp(db, current_user, xp_reward, "task_solved")
+        db.commit()
+        db.refresh(current_user)
     return {
         "ok": True,
         "result": "correct" if submission.is_correct else "incorrect",
         "submission": _serialize_submission(submission),
+        "xpReward": xp_reward,
+        "xpAwarded": xp_awarded,
+        "user": _serialize_user(current_user),
     }
 
 
@@ -525,7 +581,11 @@ def api_submit_score(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    game = db.scalar(select(Game).where(Game.slug == game_slug, Game.is_active.is_(True)))
+    game = db.scalar(
+        select(Game)
+        .options(selectinload(Game.setting))
+        .where(Game.slug == game_slug, Game.is_active.is_(True))
+    )
     if not game:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="game_not_found")
 
@@ -535,8 +595,14 @@ def api_submit_score(
 
     game_score = GameScore(game_slug=game_slug, score=max(0, payload.score), user_id=current_user.id)
     db.add(game_score)
+    config = _safe_json_loads(game.setting.config_json if game.setting else None, {})
+    if not isinstance(config, dict):
+        config = {}
+    xp_reward = int(config.get("xpReward") or config.get("xp_reward") or 75)
+    xp_awarded = _award_user_xp(db, current_user, xp_reward if payload.score > 0 else 0, "game_played")
     db.commit()
-    return {"ok": True}
+    db.refresh(current_user)
+    return {"ok": True, "xpReward": xp_reward, "xpAwarded": xp_awarded, "user": _serialize_user(current_user)}
 
 
 @oauth_router.get("/login")

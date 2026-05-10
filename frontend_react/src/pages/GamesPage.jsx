@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Binary, Bug, Gauge, Gamepad2, Keyboard, LockKeyhole, Medal, Music2, Shield, Sparkles, Trophy, Zap } from 'lucide-react'
+import { Binary, Bug, Gauge, Gamepad2, Keyboard, LockKeyhole, Medal, Music2, Shield, Sparkles, Terminal, Trophy, Zap } from 'lucide-react'
 import { apiGet } from '../api'
 import { useAppContext } from '../contexts'
 
@@ -13,15 +13,24 @@ const GAME_ICONS = {
   'memory-syntax': Shield,
   'hacker-escape': LockKeyhole,
   'typing-speed-code': Keyboard,
+  'typing-race': Keyboard,
+  'output-guess': Terminal,
 }
 
 export default function GamesPage() {
   const { lang, t } = useAppContext()
   const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    apiGet(`/api/games?lang=${lang}`).then((data) => setItems(data.items || []))
-  }, [lang])
+    setLoading(true)
+    setError('')
+    apiGet(`/api/games?lang=${lang}`)
+      .then((data) => setItems(data.items || []))
+      .catch(() => setError(t('gamesLoadFailed')))
+      .finally(() => setLoading(false))
+  }, [lang, t])
 
   const stats = useMemo(
     () => [
@@ -53,6 +62,8 @@ export default function GamesPage() {
       </div>
 
       <div className="games-grid">
+        {loading && <p className="premium-card empty-state-card">{t('loading')}</p>}
+        {error && <p className="premium-card empty-state-card alert error">{error}</p>}
         {items.map((game, index) => {
           const Icon = GAME_ICONS[game.slug] || Gamepad2
           const levelCount = game.slug === 'binary-blitz-2' ? 8 : game.engine === 'external' ? 3 : 5
@@ -94,7 +105,7 @@ export default function GamesPage() {
             </motion.article>
           )
         })}
-        {!items.length && <p className="premium-card empty-state-card">{t('noScores')}</p>}
+        {!loading && !error && !items.length && <p className="premium-card empty-state-card">{t('noScores')}</p>}
       </div>
     </section>
   )

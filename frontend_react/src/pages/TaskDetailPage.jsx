@@ -1,25 +1,38 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { CheckCircle2, Clock3, HelpCircle, Lightbulb, Send, Timer, Trophy, Zap } from 'lucide-react'
+import { CheckCircle2, Clock3, HelpCircle, Lightbulb, Send, Timer, Trophy, XCircle, Zap } from 'lucide-react'
 import { apiGet, apiPost } from '../api'
 import { useAppContext } from '../contexts'
 import { difficultyLabel } from '../services/utils'
 
 export default function TaskDetailPage() {
   const { taskId } = useParams()
-  const { lang, t, auth, onOpenAuth } = useAppContext()
+  const { lang, t, auth, onOpenAuth, refreshSession, showToast } = useAppContext()
   const [data, setData] = useState(null)
+  const [error, setError] = useState('')
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState('')
+  const [xpAwarded, setXpAwarded] = useState(0)
   const [pending, setPending] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [hintOpen, setHintOpen] = useState(false)
+  const [burst, setBurst] = useState(false)
 
   const load = useCallback(() => {
-    return apiGet(`/api/tasks/${taskId}?lang=${lang}`).then(setData)
-  }, [taskId, lang])
+    setError('')
+    return apiGet(`/api/tasks/${taskId}?lang=${lang}`)
+      .then(setData)
+      .catch((loadError) => {
+        setError(loadError?.body?.detail || t('taskLoadFailed'))
+        setData(null)
+      })
+  }, [taskId, lang, t])
 
   useEffect(() => {
+    setElapsed(0)
+    setResult('')
+    setXpAwarded(0)
+    setAnswer('')
     load()
   }, [load])
 
@@ -30,13 +43,11 @@ export default function TaskDetailPage() {
 
   const taskMeta = useMemo(() => {
     const difficulty = data?.task?.difficulty || 'easy'
-    const limit = difficulty === 'hard' ? 18 : difficulty === 'medium' ? 12 : 8
-    const xp = difficulty === 'hard' ? 120 : difficulty === 'medium' ? 80 : 50
+    const limit = data?.task?.timeLimitMinutes || (difficulty === 'hard' ? 18 : difficulty === 'medium' ? 12 : 8)
+    const xp = data?.task?.xpReward || (difficulty === 'hard' ? 120 : difficulty === 'medium' ? 80 : 50)
     const progress = Math.min(100, Math.round((elapsed / (limit * 60)) * 100))
     return { limit, xp, progress }
-  }, [data?.task?.difficulty, elapsed])
-
-  if (!data) return <p className="premium-card">{t('loading')}</p>
+  }, [data?.task?.difficulty, data?.task?.timeLimitMinutes, data?.task?.xpReward, elapsed])
 
   const submitAnswer = async (event) => {
     event.preventDefault()
@@ -47,17 +58,35 @@ export default function TaskDetailPage() {
     if (!answer.trim()) return
 
     setPending(true)
+    setResult('')
+    setXpAwarded(0)
     try {
       const response = await apiPost(`/api/tasks/${taskId}/submit`, { answer })
       setResult(response.result)
+      setXpAwarded(response.xpAwarded || 0)
       if (response.result === 'correct') {
         setAnswer('')
+        setBurst(true)
+        window.setTimeout(() => setBurst(false), 900)
+        if (response.xpAwarded) {
+          await refreshSession()
+          showToast({ eyebrow: t('solvedTask'), title: data?.task?.title || t('tasksTitle'), xp: response.xpAwarded })
+        }
       }
       await load()
+    } catch (submitError) {
+      if (submitError?.status === 401) {
+        onOpenAuth('login')
+      } else {
+        setError(t('taskSubmitFailed'))
+      }
     } finally {
       setPending(false)
     }
   }
+
+  if (error) return <p className="premium-card alert error">{error}</p>
+  if (!data) return <p className="premium-card">{t('loading')}</p>
 
   return (
     <div className="page-grid task-detail-layout">
@@ -92,22 +121,34 @@ export default function TaskDetailPage() {
         {result === 'correct' && (
           <p className="alert success task-feedback">
             <CheckCircle2 size={16} />
-            {t('resultCorrect')} +{taskMeta.xp} XP
+            {t('resultCorrect')} +{xpAwarded || 0} XP
           </p>
         )}
-        {result === 'incorrect' && <p className="alert error task-feedback">{t('resultIncorrect')}</p>}
+        {result === 'incorrect' && (
+          <p className="alert error task-feedback">
+            <XCircle size={16} />
+            {t('resultIncorrect')}
+          </p>
+        )}
 
         <form className="form-stack" onSubmit={submitAnswer}>
           <label>
             {t('answer')}
-            <textarea rows={8} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+            <textarea
+              className="task-code-editor"
+              rows={10}
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              placeholder={t('taskAnswerPlaceholder')}
+              spellCheck="false"
+            />
           </label>
           <div className="task-actions-row">
             <button type="button" className="btn btn-ghost" onClick={() => setHintOpen((value) => !value)}>
               <HelpCircle size={16} />
               {t('taskHint')}
             </button>
-            <button type="submit" className="premium-button" disabled={pending}>
+            <button type="submit" className="premium-button" disabled={pending || !answer.trim()}>
               <Send size={16} />
               {pending ? t('loading') : t('submit')}
             </button>
@@ -116,20 +157,26 @@ export default function TaskDetailPage() {
         {hintOpen && (
           <div className="task-hint-card">
             <Lightbulb size={18} />
-            <p>{t('taskHintText')}</p>
+            <p>{data.task.hint || t('taskHintText')}</p>
           </div>
         )}
         {!auth.authenticated && <p>{t('loginToSubmit')}</p>}
+        {burst && (
+          <div className="confetti-burst" aria-hidden="true">
+            {Array.from({ length: 12 }, (_, index) => <i key={index} style={{ '--i': index }} />)}
+          </div>
+        )}
       </section>
 
       <section className="premium-card fade-in task-submission-card">
         <h2>{t('mySubmissions')}</h2>
         {data.submissions.length ? (
-          <ul className="simple-list">
+          <ul className="simple-list submission-history-list">
             {data.submissions.map((submission) => (
               <li key={submission.id}>
-                <strong>{submission.isCorrect ? t('correct') : t('incorrect')}</strong> /{' '}
-                {new Date(submission.createdAt).toLocaleString()}
+                <strong>{submission.isCorrect ? t('correct') : t('incorrect')}</strong>
+                <span>{new Date(submission.createdAt).toLocaleString()}</span>
+                <code>{submission.answer.slice(0, 120)}</code>
               </li>
             ))}
           </ul>
