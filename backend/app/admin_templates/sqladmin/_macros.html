@@ -1,0 +1,166 @@
+﻿{% macro admin_t(request, ru, en) -%}
+{{ en if request.session.get('language') == 'en' else ru }}
+{%- endmacro %}
+
+{% macro menu_category(menu, request) %}
+{% if menu.is_visible(request) and menu.is_accessible(request) %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% if menu.is_active(request) %}active{% endif %}" data-bs-toggle="dropdown"
+    href="#">
+    <span class="nav-link-icon d-md-none d-lg-inline-block">
+      {% if menu.icon %}<i class="{{ menu.icon }}"></i>{% endif %}
+    </span>
+    <span class="nav-link-title">{{ menu.display_name }}</span>
+  </a>
+  <div class="dropdown-menu show">
+    <div class="dropdown-menu-columns">
+      <div class="dropdown-menu-column">
+        {% for sub_menu in menu.children %}
+        {% if sub_menu.is_visible(request) and sub_menu.is_accessible(request) %}
+        <a class="nav-link ps-lg-3 {% if sub_menu.is_active(request) %}active{% endif %}"
+          href="{{ sub_menu.url(request) }}">
+          <span class="nav-link-icon d-md-none d-lg-inline-block">
+            {% if sub_menu.icon %}<i class="{{ sub_menu.icon }}"></i>{% endif %}
+          </span>
+          <span class="nav-link-title">{{ sub_menu.display_name }}</span>
+        </a>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</li>
+{% endif %}
+{% endmacro %}
+
+{% macro menu_item(menu, request) %}
+{% if menu.is_visible(request) and menu.is_accessible(request) %}
+<li class="nav-item">
+  <a class="nav-link {% if menu.is_active(request) %}active{% endif %}" href="{{ menu.url(request) }}">
+    <span class="nav-link-icon d-md-none d-lg-inline-block">
+      {% if menu.icon %}<i class="{{ menu.icon }}"></i>{% endif %}
+    </span>
+    <span class="nav-link-title">{{ menu.display_name }}</span>
+  </a>
+</li>
+{% endif %}
+{% endmacro %}
+
+{% macro display_menu(menu, request) %}
+<div class="navbar-nav">
+  {% for item in menu.items %}
+  {% if item.type_ == "View" %}
+  {{ menu_item(item, request) }}
+  {% elif item.type_ == "Category" %}
+  {{ menu_category(item, request) }}
+  {% endif %}
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro admin_field_label(field, request) -%}
+{% set name = field.name %}
+{% if request.session.get('language') == 'en' %}
+  {% if name == 'title_ru' %}Title RU
+  {% elif name == 'title_en' %}Title EN
+  {% elif name == 'description_ru' %}Description RU
+  {% elif name == 'description_en' %}Description EN
+  {% elif name == 'youtube_url' %}YouTube URL
+  {% elif name == 'thumbnail_url' %}Thumbnail URL
+  {% elif name == 'duration' %}Duration
+  {% elif name == 'xp_reward' %}XP reward
+  {% elif name == 'is_published' %}Published
+  {% elif name == 'url' %}Video URL
+  {% elif name == 'position' %}Position
+  {% elif name == 'lesson' %}Lesson
+  {% elif name == 'author' %}Author
+  {% elif name == 'content' %}Comment
+  {% elif name == 'slug' %}Slug
+  {% elif name == 'engine' %}Engine
+  {% elif name == 'is_active' %}Active
+  {% elif name == 'difficulty' %}Difficulty
+  {% elif name == 'solution_text' %}Exact solution
+  {% elif name == 'solution_keywords' %}Solution keywords
+  {% elif name == 'email' %}Email
+  {% elif name == 'full_name' %}Full name
+  {% elif name == 'preferred_language' %}Language
+  {% elif name == 'role' %}Role
+  {% elif name == 'is_admin' %}Admin
+  {% else %}{{ field.label.text }}
+  {% endif %}
+{% else %}
+  {% if name == 'title_ru' %}Название RU
+  {% elif name == 'title_en' %}Название EN
+  {% elif name == 'description_ru' %}Описание RU
+  {% elif name == 'description_en' %}Описание EN
+  {% elif name == 'youtube_url' %}YouTube URL
+  {% elif name == 'thumbnail_url' %}Thumbnail URL
+  {% elif name == 'duration' %}Длительность
+  {% elif name == 'xp_reward' %}XP reward
+  {% elif name == 'is_published' %}Опубликован
+  {% elif name == 'url' %}URL видео
+  {% elif name == 'position' %}Позиция
+  {% elif name == 'lesson' %}Урок
+  {% elif name == 'author' %}Автор
+  {% elif name == 'content' %}Комментарий
+  {% elif name == 'slug' %}Slug
+  {% elif name == 'engine' %}Движок
+  {% elif name == 'is_active' %}Активна
+  {% elif name == 'difficulty' %}Сложность
+  {% elif name == 'solution_text' %}Точный ответ
+  {% elif name == 'solution_keywords' %}Ключевые слова ответа
+  {% elif name == 'email' %}Email
+  {% elif name == 'full_name' %}Имя
+  {% elif name == 'preferred_language' %}Язык
+  {% elif name == 'role' %}Роль
+  {% elif name == 'is_admin' %}Админ
+  {% else %}{{ field.label.text }}
+  {% endif %}
+{% endif %}
+{%- endmacro %}
+
+{% macro render_field(field, kwargs={}) %}
+{% set label_text %}{{ admin_field_label(field, request) }}{% endset %}
+{% set label_text = label_text | trim %}
+<div class="admin-form-field admin-field-{{ field.name }} {% if field.widget.input_type == 'checkbox' %}admin-field-checkbox{% endif %}">
+  {{ field.label(text=label_text, class_="form-label" + (' required-label' if field.flags.required else '')) }}
+  <div class="admin-field-control">
+    {% if field.widget.input_type == 'checkbox' %}
+    <label class="admin-switch">
+      {% if field.name == 'is_published' and request.url.path.endswith('/create') %}
+      {{ field(class_="form-check-input", checked=True) }}
+      {% elif field.errors %}
+      {{ field(class_="form-check-input is-invalid") }}
+      {% else %}
+      {{ field(class_="form-check-input") }}
+      {% endif %}
+      <span>{{ admin_t(request, 'Включено', 'Enabled') }}</span>
+    </label>
+    {% elif field.errors %}
+    {{ field(class_="form-control is-invalid", placeholder=label_text) }}
+    {% else %}
+    {{ field(class_="form-control", placeholder=label_text) }}
+    {% endif %}
+    {% for error in field.errors %}
+    <div class="invalid-feedback">{{ error }}</div>
+    {% endfor %}
+    {% if field.description %}
+    <small class="admin-field-hint">{{ field.description }}</small>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{% macro render_form_fields(form, form_opts=None) %}
+{% if form.hidden_tag is defined %}
+{{ form.hidden_tag() }}
+{% else %}
+{% for f in form if f.widget.input_type == 'hidden' %}
+{{ f }}
+{% endfor %}
+{% endif %}
+
+{% for f in form if f.widget.input_type != 'hidden' %}
+{{ render_field(f, kwargs) }}
+{% endfor %}
+{% endmacro %}

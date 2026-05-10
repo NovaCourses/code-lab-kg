@@ -1,0 +1,11 @@
+export { default as HomePage } from './HomePage'
+export { default as DashboardPage } from './DashboardPage'
+export { default as CodeEditorPage } from './CodeEditorPage'
+export { default as LessonsPage } from './LessonsPage'
+export { default as LessonDetailPage } from './LessonDetailPage'
+export { default as TasksPage } from './TasksPage'
+export { default as TaskDetailPage } from './TaskDetailPage'
+export { default as GamesPage } from './GamesPage'
+export { default as GameDetailPage } from './GameDetailPage'
+export { default as AdminPage } from './AdminPage'
+

@@ -1,0 +1,377 @@
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-dashboard-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink-0);
+  margin: 0;
+}
+
+.admin-dashboard-eyebrow {
+  margin: 0 0 0.35rem 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.admin-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.admin-quick-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--ink-0);
+  background: var(--panel);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.admin-quick-card:hover {
+  color: var(--ink-0);
+  border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+
+.admin-dashboard-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.25rem;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 8px;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.admin-dashboard-refresh:hover {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: rgba(124, 58, 237, 0.5);
+}
+
+.admin-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: 8px;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.admin-error-banner button {
+  padding: 0.5rem 1rem;
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: 6px;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.admin-error-banner button:hover {
+  background: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.admin-stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.admin-stat-card:hover {
+  border-color: color-mix(in srgb, var(--ink-0) 20%, transparent);
+  background: color-mix(in srgb, var(--panel-strong) 10%, transparent);
+  transform: translateY(-2px);
+}
+
+.admin-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-primary);
+  flex-shrink: 0;
+}
+
+.admin-stat-icon.users {
+  background: linear-gradient(135deg, #3B82F6, var(--secondary));
+}
+
+.admin-stat-icon.xp {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+}
+
+.admin-stat-icon.courses {
+  background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.admin-stat-icon.growth {
+  background: linear-gradient(135deg, var(--primary), #6D28D9);
+}
+
+.admin-stat-content {
+  flex: 1;
+}
+
+.admin-stat-content h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink-0);
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.admin-stat-subtitle {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.admin-stat-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.admin-stat-skeleton-title,
+.admin-stat-skeleton-value,
+.admin-stat-skeleton-subtitle {
+  height: 16px;
+  background: color-mix(in srgb, var(--panel-strong) 10%, transparent);
+  border-radius: 4px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.admin-stat-skeleton-value {
+  height: 28px;
+  width: 80%;
+}
+
+.admin-stat-skeleton-subtitle {
+  height: 12px;
+  width: 60%;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.admin-charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+}
+
+.admin-chart-card {
+  padding: 2rem;
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}
+
+.admin-chart-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-0);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-chart-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 300px;
+}
+
+.admin-chart-skeleton-bar {
+  height: 32px;
+  background: color-mix(in srgb, var(--panel-strong) 10%, transparent);
+  border-radius: 4px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.admin-students-list,
+.admin-courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-student-item,
+.admin-course-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--panel-strong) 5%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-student-item:hover,
+.admin-course-item:hover {
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border-color: color-mix(in srgb, var(--ink-0) 12%, transparent);
+}
+
+.admin-student-rank {
+  min-width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-primary);
+}
+
+.admin-student-info,
+.admin-course-info {
+  flex: 1;
+}
+
+.admin-student-name,
+.admin-course-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-0);
+  margin: 0;
+}
+
+.admin-student-email,
+.admin-course-meta {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0.25rem 0 0 0;
+}
+
+.admin-student-xp {
+  font-size: 13px;
+  font-weight: 700;
+  color: #FBBF24;
+}
+
+.admin-course-progress {
+  flex-shrink: 0;
+}
+
+.admin-progress-bar {
+  width: 100px;
+  height: 6px;
+  background: color-mix(in srgb, var(--panel-strong) 10%, transparent);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.admin-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #059669);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.admin-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+@media (max-width: 1200px) {
+  .admin-charts-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .admin-stat-card {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .admin-chart-card {
+    padding: 1.5rem;
+  }
+
+  .admin-chart-title {
+    font-size: 14px;
+  }
+}

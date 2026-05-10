@@ -1,0 +1,151 @@
+{% extends "sqladmin/layout.html" %}
+{% from 'sqladmin/_macros.html' import admin_t %}
+{% set dashboard = admin_dashboard_data(request) %}
+{% set stats = dashboard.stats %}
+
+{% block content_header %}
+<div class="admin-dashboard-hero">
+  <p class="admin-dashboard-eyebrow">{{ admin_t(request, 'CMS / Центр управления SaaS', 'CMS / SaaS Control Center') }}</p>
+  <h1 class="admin-dashboard-title">NovaCode</h1>
+  <p class="admin-dashboard-copy">
+    {{ admin_t(
+      request,
+      'Управляйте пользователями, видеоуроками, задачами, играми, комментариями и прогрессом обучения из одной современной панели.',
+      'Manage users, video lessons, tasks, games, comments, and learning progress from one modern control panel.'
+    ) }}
+  </p>
+  <div class="admin-dashboard-actions">
+    <a class="btn btn-primary" href="{{ request.url_for('admin:create', identity='lesson') }}">
+      <i class="fa-solid fa-video"></i>{{ admin_t(request, 'Добавить урок', 'Add lesson') }}
+    </a>
+    <a class="btn btn-primary" href="{{ request.url_for('admin:create', identity='task') }}">
+      <i class="fa-solid fa-code"></i>{{ admin_t(request, 'Добавить задачу', 'Add task') }}
+    </a>
+    <a class="btn btn-primary" href="{{ request.url_for('admin:create', identity='game') }}">
+      <i class="fa-solid fa-gamepad"></i>{{ admin_t(request, 'Добавить игру', 'Add game') }}
+    </a>
+    <a class="btn btn-secondary" href="{{ request.url_for('admin:list', identity='user') }}">
+      <i class="fa-solid fa-users"></i>{{ admin_t(request, 'Пользователи', 'Users') }}
+    </a>
+    <a class="btn btn-secondary" href="/admin/visual-editor">
+      <i class="fa-solid fa-palette"></i>{{ admin_t(request, 'Редактор сайта', 'Site editor') }}
+    </a>
+    <a class="btn btn-secondary" href="/" target="_blank" rel="noreferrer">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>{{ admin_t(request, 'Открыть сайт', 'Open site') }}
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if dashboard.error %}
+<div class="col-12">
+  <div class="admin-error-soft">
+    {{ admin_t(request, 'Не удалось загрузить часть статистики:', 'Some dashboard statistics could not be loaded:') }}
+    {{ dashboard.error }}
+  </div>
+</div>
+{% endif %}
+
+<div class="admin-dashboard-grid">
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Всего пользователей', 'Total users') }}</small>
+    <strong>{{ stats.total_users }}</strong>
+    <span>{{ stats.active_today }} {{ admin_t(request, 'активны сегодня', 'active today') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Активные пользователи', 'Active users') }}</small>
+    <strong>{{ stats.active_users }}</strong>
+    <span>{{ admin_t(request, 'доступны для обучения', 'available for learning') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Новые сегодня', 'New users today') }}</small>
+    <strong>{{ stats.new_users_today }}</strong>
+    <span>{{ admin_t(request, 'регистраций за день', 'registrations today') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Видеоуроки', 'Lessons') }}</small>
+    <strong>{{ stats.total_lessons }}</strong>
+    <span>{{ admin_t(request, 'уроков в CMS', 'lessons in CMS') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Задачи', 'Tasks') }}</small>
+    <strong>{{ stats.total_tasks }}</strong>
+    <span>{{ stats.submissions }} {{ admin_t(request, 'отправок решений', 'task submissions') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Игры', 'Games') }}</small>
+    <strong>{{ stats.total_games }}</strong>
+    <span>{{ stats.game_scores }} {{ admin_t(request, 'результатов', 'scores') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'Комментарии', 'Comments') }}</small>
+    <strong>{{ stats.total_comments }}</strong>
+    <span>{{ admin_t(request, 'обсуждений уроков', 'lesson discussions') }}</span>
+  </div>
+  <div class="admin-dashboard-card">
+    <small>{{ admin_t(request, 'XP earned', 'XP earned') }}</small>
+    <strong>{{ stats.total_xp }}</strong>
+    <span>{{ admin_t(request, 'накоплено студентами', 'earned by students') }}</span>
+  </div>
+</div>
+
+<div class="admin-dashboard-two">
+  <section class="admin-dashboard-panel">
+    <h3>{{ admin_t(request, 'Активность за 7 дней', '7-day activity') }}</h3>
+    <div class="admin-bars">
+      {% for item in dashboard.activity_chart %}
+      <div class="admin-bar">
+        <div class="admin-bar-count">{{ item.count }}</div>
+        <div class="admin-bar-fill" style="height: {{ item.height }}%;"></div>
+        <div class="admin-bar-label">{{ item.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="admin-dashboard-panel">
+    <h3>{{ admin_t(request, 'Лучшие студенты', 'Top students') }}</h3>
+    <div class="admin-list">
+      {% for student in dashboard.top_students %}
+      <div class="admin-list-row">
+        <div>
+          <strong>{{ student.name }}</strong>
+          <small>{{ student.email }} · {{ admin_t(request, 'уровень', 'level') }} {{ student.level }}</small>
+        </div>
+        <span class="admin-badge">{{ student.xp }} XP</span>
+      </div>
+      {% else %}
+      <div class="admin-list-row">
+        <div>
+          <strong>{{ admin_t(request, 'Студентов пока нет', 'No students yet') }}</strong>
+          <small>{{ admin_t(request, 'После регистрации они появятся здесь.', 'Registered learners will appear here.') }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<section class="admin-dashboard-panel">
+  <h3>{{ admin_t(request, 'Недавняя активность', 'Recent activity') }}</h3>
+  <div class="admin-list">
+    {% for item in dashboard.recent_activity %}
+    <div class="admin-list-row">
+      <div>
+        <strong>{{ item.label }}</strong>
+        <small>{{ item.created_at }}</small>
+      </div>
+      <span class="admin-badge">+{{ item.xp }} XP</span>
+    </div>
+    {% else %}
+    <div class="admin-list-row">
+      <div>
+        <strong>{{ admin_t(request, 'Активности пока нет', 'No activity yet') }}</strong>
+        <small>{{ admin_t(request, 'События обучения появятся после действий пользователей.', 'Learning events will appear after users take action.') }}</small>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

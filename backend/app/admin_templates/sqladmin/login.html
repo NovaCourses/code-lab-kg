@@ -1,0 +1,34 @@
+﻿{% extends "sqladmin/base.html" %}
+{% from 'sqladmin/_macros.html' import admin_t %}
+{% block body %}
+<div class="admin-login-shell d-flex align-items-center justify-content-center vh-100">
+  <form class="admin-login-card col-lg-6 col-md-6 card card-md" action="{{ url_for('admin:login') }}" method="POST" autocomplete="off">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">{{ admin_t(request, 'Вход в', 'Sign in to') }} {{ admin.title }}</h2>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        {% if error %}
+        <input name="username" type="text" class="form-control is-invalid" placeholder="{{ admin_t(request, 'Введите email', 'Enter email') }}" autocomplete="off">
+        <div class="invalid-feedback">{{ admin_t(request, 'Неверные учетные данные.', 'Invalid credentials.') }}</div>
+        {% else %}
+        <input name="username" type="text" class="form-control" placeholder="{{ admin_t(request, 'Введите email', 'Enter email') }}" autocomplete="off">
+        {% endif %}
+      </div>
+      <div class="mb-2">
+        <label class="form-label">{{ admin_t(request, 'Пароль', 'Password') }}</label>
+        <div class="input-group input-group-flat">
+          {% if error %}
+          <input name="password" type="password" class="form-control is-invalid" placeholder="{{ admin_t(request, 'Пароль', 'Password') }}" autocomplete="off">
+          <div class="invalid-feedback">{{ admin_t(request, 'Неверные учетные данные.', 'Invalid credentials.') }}</div>
+          {% else %}
+          <input name="password" type="password" class="form-control" placeholder="{{ admin_t(request, 'Пароль', 'Password') }}" autocomplete="off">
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn btn-primary w-100">{{ admin_t(request, 'Войти', 'Sign in') }}</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

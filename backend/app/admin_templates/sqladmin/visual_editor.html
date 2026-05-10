@@ -1,0 +1,241 @@
+{% extends "sqladmin/layout.html" %}
+{% from 'sqladmin/_macros.html' import admin_t %}
+
+{% block content_header %}
+<div class="admin-dashboard-hero admin-editor-hero">
+  <p class="admin-dashboard-eyebrow">{{ admin_t(request, 'Визуальный редактор', 'Visual editor') }}</p>
+  <h1 class="admin-dashboard-title">{{ admin_t(request, 'Дизайн сайта', 'Site design') }}</h1>
+  <p class="admin-dashboard-copy">
+    {{ admin_t(
+      request,
+      'Настраивайте hero, секции, цвета, медиа и live preview без изменения кода.',
+      'Tune hero, sections, colors, media, and live preview without changing code.'
+    ) }}
+  </p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="col-12 admin-editor-grid">
+  <section class="admin-editor-panel">
+    <div class="admin-editor-section-head">
+      <div>
+        <span class="admin-form-kicker">{{ admin_t(request, 'Hero section', 'Hero section') }}</span>
+        <h3>{{ admin_t(request, 'Главный экран', 'Main screen') }}</h3>
+      </div>
+      <button class="btn btn-primary" type="button" data-save-design>
+        <i class="fa-solid fa-floppy-disk"></i>{{ admin_t(request, 'Сохранить дизайн', 'Save design') }}
+      </button>
+    </div>
+
+    <div class="admin-form-field">
+      <label class="form-label" for="editor-title">{{ admin_t(request, 'Заголовок', 'Title') }}</label>
+      <input id="editor-title" class="form-control" value="NovaCode" data-preview-title>
+    </div>
+    <div class="admin-form-field">
+      <label class="form-label" for="editor-subtitle">{{ admin_t(request, 'Подзаголовок', 'Subtitle') }}</label>
+      <textarea id="editor-subtitle" class="form-control" rows="3" data-preview-subtitle>{{ admin_t(request, 'Изучай программирование, решай задачи и развивай навыки вместе с NovaCode.', 'Learn programming, solve tasks and grow your skills with NovaCode.') }}</textarea>
+    </div>
+
+    <div class="admin-editor-swatches">
+      <label>
+        <span>{{ admin_t(request, 'Primary color', 'Primary color') }}</span>
+        <input type="color" value="#7c3aed" data-preview-primary>
+      </label>
+      <label>
+        <span>{{ admin_t(request, 'Secondary color', 'Secondary color') }}</span>
+        <input type="color" value="#2563eb" data-preview-secondary>
+      </label>
+      <label>
+        <span>{{ admin_t(request, 'Glow color', 'Glow color') }}</span>
+        <input type="color" value="#06b6d4" data-preview-glow>
+      </label>
+    </div>
+
+    <div class="admin-editor-blocks">
+      <h3>{{ admin_t(request, 'Секции главной', 'Homepage sections') }}</h3>
+      <label><input type="checkbox" checked data-preview-section="leaderboard"> {{ admin_t(request, 'Leaderboard', 'Leaderboard') }}</label>
+      <label><input type="checkbox" checked data-preview-section="ai_assistant"> {{ admin_t(request, 'AI assistant', 'AI assistant') }}</label>
+      <label><input type="checkbox" checked data-preview-section="daily_missions"> {{ admin_t(request, 'Ежедневные цели', 'Daily missions') }}</label>
+      <label><input type="checkbox" checked data-preview-section="achievements"> {{ admin_t(request, 'Достижения', 'Achievements') }}</label>
+      <label><input type="checkbox" checked data-preview-section="courses"> {{ admin_t(request, 'Курсы', 'Courses') }}</label>
+      <label><input type="checkbox" checked data-preview-section="statistics"> {{ admin_t(request, 'Статистика', 'Statistics') }}</label>
+      <label><input type="checkbox" checked data-preview-section="community"> {{ admin_t(request, 'Сообщество', 'Community') }}</label>
+    </div>
+
+    <div class="admin-editor-media">
+      <h3>{{ admin_t(request, 'Медиа библиотека', 'Media library') }}</h3>
+      <div class="admin-media-drop">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span>{{ admin_t(request, 'Перетащите изображение или выберите файл', 'Drop an image or choose a file') }}</span>
+        <input type="file" accept="image/*" data-preview-image>
+      </div>
+    </div>
+  </section>
+
+  <aside class="admin-editor-preview">
+    <div class="admin-device-tabs">
+      <button type="button" class="active" data-device="desktop">Desktop</button>
+      <button type="button" data-device="tablet">Tablet</button>
+      <button type="button" data-device="mobile">Mobile</button>
+    </div>
+    <div class="admin-preview-device" data-preview-device>
+      <div class="admin-preview-page">
+        <div class="admin-preview-hero" data-preview-hero>
+          <span class="admin-preview-badge">{{ admin_t(request, 'Премиальная платформа', 'Premium platform') }}</span>
+          <h2 data-live-title>NovaCode</h2>
+          <p data-live-subtitle>{{ admin_t(request, 'Изучай программирование, решай задачи и развивай навыки вместе с NovaCode.', 'Learn programming, solve tasks and grow your skills with NovaCode.') }}</p>
+          <div class="admin-preview-actions">
+            <span>{{ admin_t(request, 'Начать обучение', 'Start learning') }}</span>
+            <span>{{ admin_t(request, 'Исследовать платформу', 'Explore platform') }}</span>
+          </div>
+        </div>
+        <div class="admin-preview-sections">
+          <span data-section-chip="leaderboard">Leaderboard</span>
+          <span data-section-chip="ai_assistant">AI</span>
+          <span data-section-chip="daily_missions">{{ admin_t(request, 'Ежедневные цели', 'Daily missions') }}</span>
+          <span data-section-chip="achievements">{{ admin_t(request, 'Достижения', 'Achievements') }}</span>
+          <span data-section-chip="courses">{{ admin_t(request, 'Курсы', 'Courses') }}</span>
+          <span data-section-chip="statistics">{{ admin_t(request, 'Статистика', 'Stats') }}</span>
+          <span data-section-chip="community">{{ admin_t(request, 'Сообщество', 'Community') }}</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script>
+  (function () {
+    var title = document.querySelector("[data-preview-title]");
+    var subtitle = document.querySelector("[data-preview-subtitle]");
+    var liveTitle = document.querySelector("[data-live-title]");
+    var liveSubtitle = document.querySelector("[data-live-subtitle]");
+    var hero = document.querySelector("[data-preview-hero]");
+    var device = document.querySelector("[data-preview-device]");
+
+    function updateText() {
+      if (liveTitle && title) liveTitle.textContent = title.value || "NovaCode";
+      if (liveSubtitle && subtitle) liveSubtitle.textContent = subtitle.value || "";
+    }
+
+    function updateTheme() {
+      var primary = document.querySelector("[data-preview-primary]").value;
+      var secondary = document.querySelector("[data-preview-secondary]").value;
+      var glow = document.querySelector("[data-preview-glow]").value;
+      hero.style.setProperty("--preview-primary", primary);
+      hero.style.setProperty("--preview-secondary", secondary);
+      hero.style.setProperty("--preview-glow", glow);
+    }
+
+    document.querySelectorAll("[data-preview-section]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        var chip = document.querySelector('[data-section-chip="' + input.dataset.previewSection + '"]');
+        if (chip) chip.hidden = !input.checked;
+      });
+    });
+
+    document.querySelectorAll("[data-device]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        document.querySelectorAll("[data-device]").forEach(function (item) { item.classList.remove("active"); });
+        button.classList.add("active");
+        device.dataset.size = button.dataset.device;
+      });
+    });
+
+    document.querySelector("[data-preview-image]").addEventListener("change", function (event) {
+      var file = event.target.files && event.target.files[0];
+      if (!file) return;
+      var url = URL.createObjectURL(file);
+      hero.style.backgroundImage = "linear-gradient(135deg, rgba(15,23,42,.52), rgba(2,6,23,.72)), url(" + url + ")";
+    });
+
+    function collectState() {
+      return {
+        hero: {
+          title: title.value,
+          subtitle: subtitle.value
+        },
+        theme_editor: {
+          primary_color: document.querySelector("[data-preview-primary]").value,
+          secondary_color: document.querySelector("[data-preview-secondary]").value,
+          glow_color: document.querySelector("[data-preview-glow]").value
+        },
+        sections: Array.prototype.map.call(document.querySelectorAll("[data-preview-section]"), function (input) {
+          return {
+            id: input.dataset.previewSection,
+            label: input.parentElement.textContent.trim(),
+            enabled: input.checked
+          };
+        })
+      };
+    }
+
+    function applyState(cms) {
+      if (!cms) return;
+      if (cms.hero) {
+        if (cms.hero.title) title.value = cms.hero.title;
+        if (cms.hero.subtitle) subtitle.value = cms.hero.subtitle;
+      }
+      if (cms.theme_editor) {
+        document.querySelector("[data-preview-primary]").value = cms.theme_editor.primary_color || "#7c3aed";
+        document.querySelector("[data-preview-secondary]").value = cms.theme_editor.secondary_color || "#2563eb";
+        document.querySelector("[data-preview-glow]").value = cms.theme_editor.glow_color || "#06b6d4";
+      }
+      if (Array.isArray(cms.sections)) {
+        cms.sections.forEach(function (section) {
+          var input = document.querySelector('[data-preview-section="' + section.id + '"]');
+          var chip = document.querySelector('[data-section-chip="' + section.id + '"]');
+          if (input) input.checked = section.enabled !== false;
+          if (chip) chip.hidden = section.enabled === false;
+        });
+      }
+      updateText();
+      updateTheme();
+    }
+
+    async function loadDesignSettings() {
+      try {
+        var response = await fetch("/api/admin/site-builder");
+        var payload = await response.json();
+        if (payload.success) {
+          applyState(payload.data);
+          return;
+        }
+      } catch (error) {
+        var draft = localStorage.getItem("novacode-admin-design-draft");
+        if (draft) applyState(JSON.parse(draft));
+      }
+    }
+
+    document.querySelector("[data-save-design]").addEventListener("click", async function () {
+      var button = this;
+      var payload = collectState();
+      localStorage.setItem("novacode-admin-design-draft", JSON.stringify(payload));
+      try {
+        await fetch("/api/admin/site-builder", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+        button.innerHTML = '<i class="fa-solid fa-check"></i>{{ admin_t(request, "Сохранено", "Saved") }}';
+      } catch (error) {
+        button.innerHTML = '<i class="fa-solid fa-check"></i>{{ admin_t(request, "Черновик сохранён", "Draft saved") }}';
+      }
+      setTimeout(function () {
+        button.innerHTML = '<i class="fa-solid fa-floppy-disk"></i>{{ admin_t(request, "Сохранить дизайн", "Save design") }}';
+      }, 1300);
+    });
+
+    [title, subtitle].forEach(function (input) { input.addEventListener("input", updateText); });
+    document.querySelectorAll("[data-preview-primary], [data-preview-secondary], [data-preview-glow]").forEach(function (input) {
+      input.addEventListener("input", updateTheme);
+    });
+    updateText();
+    updateTheme();
+    loadDesignSettings();
+  })();
+</script>
+{% endblock %}

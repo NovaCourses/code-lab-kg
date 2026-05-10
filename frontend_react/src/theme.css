@@ -1,0 +1,605 @@
+/* Theme contrast contract.
+   This layer intentionally sits above legacy page CSS and maps every major UI
+   surface back to NovaCode theme tokens. */
+
+body[data-theme] {
+  --surface-0: color-mix(in srgb, var(--bg-0) 92%, var(--panel-strong));
+  --surface-1: var(--panel);
+  --surface-2: var(--panel-strong);
+  --surface-hover: color-mix(in srgb, var(--panel-strong) 88%, var(--primary) 12%);
+  --surface-active: color-mix(in srgb, var(--panel-strong) 78%, var(--primary) 22%);
+  --field-bg: color-mix(in srgb, var(--panel-strong) 86%, transparent);
+  --field-focus: color-mix(in srgb, var(--panel-strong) 78%, var(--primary) 22%);
+  --ghost-bg: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  --ghost-hover: color-mix(in srgb, var(--panel-strong) 78%, var(--primary) 22%);
+  --primary-soft: color-mix(in srgb, var(--primary) 16%, transparent);
+  --secondary-soft: color-mix(in srgb, var(--secondary) 14%, transparent);
+  --success-soft: color-mix(in srgb, var(--ok) 16%, transparent);
+  --danger-soft: color-mix(in srgb, var(--danger) 16%, transparent);
+  --media-scrim: color-mix(in srgb, var(--bg-0) 72%, transparent);
+  --theme-shadow: var(--shadow-soft);
+}
+
+body[data-theme],
+body[data-theme] .app-shell,
+body[data-theme] .content-wrap,
+body[data-theme] .route-transition,
+body[data-theme] .dashboard-page,
+body[data-theme] .admin-page {
+  color: var(--ink-0);
+}
+
+body[data-theme] :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .page-title,
+  .section-title,
+  .hero-title,
+  .dashboard-header h1,
+  .stat-content h3,
+  .chart-card h2,
+  .recent-activity h2,
+  .lesson-card-body h2,
+  .lesson-panel-heading h2,
+  .lesson-sidebar-title h2,
+  .lessons-hub-header h1,
+  .continue-learning-title h2,
+  .admin-dashboard-header h1,
+  [class*='admin-'][class*='title'],
+  [class*='admin-'][class*='name'],
+  [class*='admin-'][class*='value']
+) {
+  color: var(--ink-0);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+body[data-theme] :where(
+  p,
+  li,
+  label,
+  small,
+  td,
+  input,
+  textarea,
+  select,
+  .hero-subtitle,
+  .dashboard-header p,
+  .stat-content p,
+  .activity-content p,
+  .feature-card p,
+  .continue-info p,
+  .achievement-card p,
+  .lesson-card-body p,
+  .lesson-panel-heading p,
+  .lesson-sidebar-title span,
+  .message.bot .message-content,
+  [class*='admin-'][class*='description']
+) {
+  color: var(--ink-1);
+}
+
+body[data-theme] :where(
+  .meta-line,
+  .lesson-muted,
+  .hero-tech-pill,
+  .window-title,
+  .activity-content span,
+  .lesson-card-topline span,
+  .lesson-card-tags span,
+  .continue-learning-title span,
+  .continue-learning-list small,
+  .lessons-hub-metrics span,
+  .command-copy small,
+  .command-type,
+  .command-empty,
+  .profile-copy span,
+  .sidebar-xp-top span,
+  .message-time,
+  [class*='admin-'][class*='subtitle'],
+  [class*='admin-'][class*='meta'],
+  [class*='admin-'][class*='email'],
+  [class*='admin-'][class*='count'],
+  [class*='admin-'][class*='empty']
+) {
+  color: var(--ink-soft);
+}
+
+body[data-theme] :where(
+  .homepage-container,
+  .hero-section,
+  .tech-stack-section,
+  .daily-missions-section,
+  .features-section,
+  .continue-learning-section,
+  .achievements-section,
+  .leaderboard-section,
+  .ai-assistant-section,
+  .lessons-hub,
+  .lesson-studio,
+  .dashboard-page,
+  .admin-page
+) {
+  background:
+    radial-gradient(circle at 10% 0%, var(--primary-soft), transparent 34%),
+    radial-gradient(circle at 88% 8%, var(--secondary-soft), transparent 36%),
+    linear-gradient(165deg, var(--bg-0), var(--bg-1));
+}
+
+body[data-theme] :where(
+  .premium-card,
+  .card,
+  .stat-card,
+  .chart-card,
+  .recent-activity,
+  .dashboard-widget,
+  .info-card,
+  .progress-card,
+  .tech-icon-card,
+  .mission-card,
+  .feature-card,
+  .continue-card,
+  .achievement-card,
+  .leaderboard-card,
+  .ai-card,
+  .live-stat-card,
+  .floating-code-window,
+  .developer-terminal,
+  .lessons-hub-header,
+  .continue-learning-strip,
+  .lesson-card-modern,
+  .lesson-panel,
+  .lesson-sidebar-panel,
+  .lesson-studio-header,
+  .lesson-studio-status,
+  .lesson-video-card,
+  .lesson-note-item,
+  .lesson-comment-item,
+  .lesson-achievement-list article,
+  .lesson-history-list a,
+  .lesson-quiz-list fieldset,
+  .modal-card,
+  .command-palette,
+  .premium-sidebar,
+  .mobile-bottom-nav,
+  .site-footer,
+  .ai-assistant-window,
+  .admin-sidebar,
+  .admin-user-menu,
+  .admin-modal,
+  [class*='admin-'][class*='card'],
+  [class*='admin-'][class*='table-wrapper'],
+  [class*='admin-'][class*='item'],
+  [class*='admin-'][class*='search'],
+  [class*='admin-'][class*='editor'],
+  [class*='admin-'][class*='preview'],
+  [class*='admin-'][class*='menu']
+) {
+  color: var(--ink-0);
+  border-color: var(--border);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ink-0) 5%, transparent), color-mix(in srgb, var(--ink-0) 2%, transparent)),
+    var(--surface-1);
+  box-shadow: var(--theme-shadow);
+}
+
+body[data-theme] :where(
+  .premium-card:hover,
+  .card:hover,
+  .stat-card:hover,
+  .chart-card:hover,
+  .activity-item:hover,
+  .feature-card:hover,
+  .continue-card:hover,
+  .achievement-card:hover,
+  .lesson-video-card:hover,
+  .lesson-video-card.is-current,
+  .command-result:hover,
+  .command-result.active,
+  [class*='admin-'][class*='card']:hover,
+  [class*='admin-'][class*='item']:hover
+) {
+  border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-strong);
+}
+
+body[data-theme] :where(
+  .hero-primary-btn,
+  .premium-button,
+  .continue-button a,
+  .lesson-card-thumb span,
+  .lesson-card-action:hover,
+  .send-button,
+  .ai-assistant-toggle,
+  .admin-btn-primary,
+  .admin-stat-icon,
+  .admin-logo-icon,
+  .admin-user-avatar,
+  .admin-student-rank,
+  .admin-progress-fill,
+  .achievement-badge,
+  .profile-orb
+) {
+  color: var(--on-primary);
+  border-color: color-mix(in srgb, var(--primary) 38%, var(--border));
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+body[data-theme] :where(
+  .chip,
+  .hero-secondary-btn,
+  .sidebar-icon-button,
+  .command-trigger,
+  .sidebar-link,
+  .sidebar-action,
+  .mobile-bottom-nav a,
+  .mobile-bottom-nav button,
+  .lesson-ai-actions button,
+  .lesson-resource-grid button,
+  .lesson-resource-grid a,
+  .lesson-note-composer button,
+  .lesson-comment-form button,
+  .lesson-quiz-footer button,
+  .lesson-alert-state button,
+  .lesson-reply-box button,
+  .lesson-card-action,
+  .admin-btn-secondary,
+  .admin-dashboard-refresh,
+  .admin-period-btn,
+  .admin-editor-btn,
+  .admin-quick-action,
+  .admin-page-btn,
+  .admin-action-btn,
+  .admin-course-action-btn,
+  .admin-user-button,
+  .admin-sidebar-toggle
+) {
+  color: var(--ink-0);
+  border-color: var(--border);
+  background: var(--ghost-bg);
+}
+
+body[data-theme] :where(
+  .chip:hover,
+  .hero-secondary-btn:hover,
+  .sidebar-link:hover,
+  .sidebar-link.active,
+  .sidebar-action:hover,
+  .sidebar-action.primary,
+  .mobile-bottom-nav a.active,
+  .mobile-bottom-nav a:hover,
+  .mobile-bottom-nav button:hover,
+  .admin-nav-item:hover,
+  .admin-nav-item.active,
+  .admin-btn-secondary:hover,
+  .admin-dashboard-refresh:hover,
+  .admin-period-btn:hover,
+  .admin-period-btn.active,
+  .admin-editor-btn:hover,
+  .admin-editor-btn.active,
+  .admin-quick-action:hover,
+  .admin-page-btn:hover:not(:disabled),
+  .admin-action-btn:hover:not(:disabled),
+  .admin-course-action-btn:hover,
+  .admin-user-button:hover
+) {
+  color: var(--ink-0);
+  border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+  background: var(--ghost-hover);
+}
+
+body[data-theme] :where(
+  input,
+  textarea,
+  select,
+  .ai-input textarea,
+  .lesson-note-composer textarea,
+  .lesson-comment-form textarea,
+  .lesson-reply-box input,
+  .admin-form-group input,
+  .admin-form-group textarea,
+  .admin-format-select,
+  .admin-page-size select,
+  .admin-xp-edit input
+) {
+  color: var(--ink-0);
+  border-color: var(--border);
+  background: var(--field-bg);
+}
+
+body[data-theme] :where(
+  input:focus,
+  textarea:focus,
+  select:focus,
+  .ai-input textarea:focus,
+  .admin-form-group input:focus,
+  .admin-form-group textarea:focus,
+  .admin-format-select:focus
+) {
+  outline: none;
+  color: var(--ink-0);
+  border-color: var(--primary);
+  background: var(--field-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+body[data-theme] :where(input::placeholder, textarea::placeholder) {
+  color: var(--ink-soft);
+}
+
+body[data-theme] :where(
+  .premium-sidebar,
+  .site-footer,
+  .command-palette,
+  .ai-assistant-window,
+  .admin-sidebar,
+  .admin-modal
+) {
+  background:
+    radial-gradient(circle at 12% 0%, var(--primary-soft), transparent 40%),
+    var(--surface-2);
+}
+
+body[data-theme] :where(
+  .sidebar-logo,
+  .sidebar-logo-text,
+  .sidebar-link,
+  .sidebar-action,
+  .mobile-bottom-nav a,
+  .mobile-bottom-nav button,
+  .command-result,
+  .admin-nav-item,
+  .admin-user-button
+) {
+  color: var(--ink-0);
+}
+
+body[data-theme] :where(
+  .command-search-row,
+  .code-window-header,
+  .ai-input,
+  .admin-sidebar-header,
+  .admin-sidebar-footer,
+  .admin-modal-header,
+  .admin-users-table thead,
+  .admin-users-table td,
+  .admin-chart-title,
+  .admin-course-meta,
+  .admin-editor-footer
+) {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+}
+
+body[data-theme] .admin-users-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+body[data-theme] :where(
+  .admin-users-table th,
+  .admin-email-cell,
+  .admin-page-info,
+  .admin-game-stat-plays,
+  .admin-chart-empty
+) {
+  color: var(--ink-soft);
+}
+
+body[data-theme] :where(
+  .admin-users-table td:first-child,
+  .admin-student-name,
+  .admin-course-name,
+  .admin-course-title,
+  .admin-game-stat-name,
+  .admin-user-name,
+  .admin-logo-title
+) {
+  color: var(--ink-0);
+}
+
+body[data-theme] :where(
+  .admin-user-id,
+  .admin-role-badge.admin,
+  .admin-nav-item.active,
+  .admin-user-menu-value
+) {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+body[data-theme] :where(
+  .admin-status-badge.active,
+  .admin-xp-edit button,
+  .admin-action-btn.unban:hover
+) {
+  color: var(--ok);
+  background: var(--success-soft);
+}
+
+body[data-theme] :where(
+  .admin-error-banner,
+  .admin-status-badge.banned,
+  .admin-course-action-btn.delete:hover,
+  .admin-action-btn.delete:hover,
+  .admin-action-btn.ban:hover
+) {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 32%, var(--border));
+  background: var(--danger-soft);
+}
+
+body[data-theme] :where(
+  .message.bot .message-content,
+  .ai-quick-actions button
+) {
+  color: var(--ink-1);
+  border-color: var(--border);
+  background: var(--surface-1);
+}
+
+body[data-theme] .message.user .message-content {
+  color: var(--on-primary);
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+}
+
+body[data-theme] .message.user .message-content :where(p, span, code) {
+  color: var(--on-primary);
+}
+
+body[data-theme] :where(
+  .admin-dashboard,
+  .admin-users,
+  .admin-courses,
+  .admin-analytics,
+  .admin-editor,
+  .admin-dashboard-header,
+  .admin-users-header,
+  .admin-courses-header,
+  .admin-analytics-header,
+  .admin-charts-section,
+  .admin-stats-grid,
+  .admin-courses-grid,
+  .admin-analytics-grid,
+  .admin-editor-controls,
+  .admin-editor-stats,
+  .admin-course-actions,
+  .admin-modal-actions,
+  .admin-user-section,
+  .admin-user-menu-item,
+  .admin-nav-item
+) {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-theme] :where(.admin-nav-item:hover, .admin-nav-item.active) {
+  background: var(--ghost-hover);
+}
+
+body[data-theme] :where(
+  .nova-player-controls,
+  .nova-speed-menu,
+  .nova-next-lesson
+) {
+  color: var(--ink-0);
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface-2) 84%, transparent);
+}
+
+body[data-theme] :where(
+  .nova-player-control-row button,
+  .nova-speed-menu button,
+  .nova-player-error-actions button,
+  .nova-player-error-actions a,
+  .nova-next-lesson button
+) {
+  color: var(--ink-0);
+  border-color: var(--border);
+  background: var(--ghost-bg);
+}
+
+body[data-theme] :where(
+  .nova-player-poster,
+  .nova-player-title,
+  .nova-player-poster-copy strong,
+  .nova-player-error,
+  .nova-player-error strong
+) {
+  color: var(--on-media);
+}
+
+body[data-theme] :where(
+  .nova-player-poster-copy small,
+  .nova-player-kicker,
+  .nova-player-progress-row,
+  .nova-next-lesson span
+) {
+  color: color-mix(in srgb, var(--on-media) 74%, transparent);
+}
+
+body[data-theme] .nova-player-iframe {
+  background: var(--bg-0);
+}
+
+body[data-theme] :where(
+  .lesson-studio-status-bar,
+  .lesson-video-progress,
+  .lesson-card-progress,
+  .sidebar-xp-track,
+  .progress-bar,
+  .admin-progress-bar
+) {
+  background: color-mix(in srgb, var(--ink-0) 10%, transparent);
+}
+
+body[data-theme] :where(
+  .lesson-studio-status-bar span,
+  .lesson-video-progress i,
+  .lesson-card-progress span,
+  .sidebar-xp-track span,
+  .progress-fill,
+  .xp-progress-fill
+) {
+  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent-b));
+}
+
+body[data-theme] :where(
+  .recharts-cartesian-grid line,
+  .recharts-cartesian-axis-line,
+  .recharts-cartesian-axis-tick-line
+) {
+  stroke: var(--border);
+}
+
+body[data-theme] :where(.recharts-text, .recharts-legend-item-text) {
+  fill: var(--ink-soft);
+  color: var(--ink-soft);
+}
+
+body[data-theme] .recharts-default-tooltip {
+  color: var(--ink-0);
+  border-color: var(--border);
+  background: var(--surface-2);
+  box-shadow: var(--theme-shadow);
+}
+
+body[data-theme] :where(.loading-spinner, .admin-loading-spinner, .admin-spinner) {
+  border-color: color-mix(in srgb, var(--ink-0) 14%, transparent);
+  border-top-color: var(--primary);
+}
+
+body[data-theme='light'] {
+  --theme-shadow: 0 18px 44px color-mix(in srgb, var(--ink-0) 12%, transparent);
+}
+
+body[data-theme='light'] :where(
+  .premium-sidebar,
+  .site-footer,
+  .command-palette,
+  .ai-assistant-window,
+  .admin-sidebar,
+  .admin-modal,
+  .premium-card,
+  .card,
+  .stat-card,
+  .chart-card,
+  .recent-activity,
+  .lesson-panel,
+  .lesson-sidebar-panel,
+  .lesson-card-modern,
+  [class*='admin-'][class*='card'],
+  [class*='admin-'][class*='table-wrapper']
+) {
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--ink-0) 12%, transparent);
+}
+
+body[data-theme='dark'] {
+  --theme-shadow: 0 22px 60px color-mix(in srgb, var(--bg-0) 64%, transparent);
+}

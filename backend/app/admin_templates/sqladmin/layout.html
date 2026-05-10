@@ -1,0 +1,113 @@
+{% extends "sqladmin/base.html" %}
+{% from 'sqladmin/_macros.html' import admin_t %}
+{% block body %}
+{% set current_path = request.url.path %}
+<div class="wrapper">
+  <aside class="admin-sidebar navbar navbar-expand-lg navbar-vertical navbar-expand-md navbar-dark">
+    <div class="container-fluid admin-sidebar-inner">
+      <a class="admin-brand-card" href="{{ url_for('admin:index') }}">
+        <span class="admin-brand-mark">
+          {% if admin.logo_url %}
+          <img src="{{ admin.logo_url }}" alt="NovaCode" />
+          {% else %}
+          NC
+          {% endif %}
+        </span>
+        <span class="admin-brand-copy">
+          <strong>NovaCode</strong>
+          <small>{{ admin_t(request, 'Панель управления', 'Control panel') }}</small>
+        </span>
+      </a>
+
+      <div class="admin-control-card">
+        <span class="admin-sidebar-section-title">{{ admin_t(request, 'Интерфейс', 'Interface') }}</span>
+        <div class="admin-pill-row">
+          <a href="/admin/language/ru?next={{ current_path }}" class="admin-pill {% if request.session.get('language') != 'en' %}active{% endif %}">RU</a>
+          <a href="/admin/language/en?next={{ current_path }}" class="admin-pill {% if request.session.get('language') == 'en' %}active{% endif %}">EN</a>
+        </div>
+        <div class="admin-pill-row">
+          <a href="/admin/theme/light?next={{ current_path }}" class="admin-pill {% if request.session.get('admin_theme') == 'light' %}active{% endif %}">
+            <i class="fa-solid fa-sun"></i><span>{{ admin_t(request, 'Светлая', 'Light') }}</span>
+          </a>
+          <a href="/admin/theme/dark?next={{ current_path }}" class="admin-pill {% if request.session.get('admin_theme', 'dark') == 'dark' %}active{% endif %}">
+            <i class="fa-solid fa-moon"></i><span>{{ admin_t(request, 'Тёмная', 'Dark') }}</span>
+          </a>
+        </div>
+      </div>
+
+      <nav class="admin-sidebar-menu" aria-label="{{ admin_t(request, 'Навигация админки', 'Admin navigation') }}">
+        <span class="admin-sidebar-section-title">{{ admin_t(request, 'Контент', 'Content') }}</span>
+        <a class="admin-sidebar-link {% if current_path == '/admin/' %}active{% endif %}" href="{{ url_for('admin:index') }}">
+          <i class="fa-solid fa-chart-line"></i><span>Dashboard</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/user/' in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='user') }}">
+          <i class="fa-solid fa-users"></i><span>{{ admin_t(request, 'Пользователи', 'Users') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/lesson/' in current_path and '/lesson-video-link/' not in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='lesson') }}">
+          <i class="fa-solid fa-video"></i><span>{{ admin_t(request, 'Видеоуроки', 'Video lessons') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/lesson-video-link/' in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='lesson-video-link') }}">
+          <i class="fa-solid fa-link"></i><span>{{ admin_t(request, 'Видео-ссылки', 'Video links') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/task/' in current_path and '/task-submission/' not in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='task') }}">
+          <i class="fa-solid fa-code"></i><span>{{ admin_t(request, 'Задачи', 'Tasks') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/game/' in current_path and '/game-score/' not in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='game') }}">
+          <i class="fa-solid fa-gamepad"></i><span>{{ admin_t(request, 'Игры', 'Games') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/comment/' in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='comment') }}">
+          <i class="fa-solid fa-comments"></i><span>{{ admin_t(request, 'Комментарии', 'Comments') }}</span>
+        </a>
+
+        <span class="admin-sidebar-section-title">{{ admin_t(request, 'Результаты', 'Results') }}</span>
+        <a class="admin-sidebar-link {% if '/admin/task-submission/' in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='task-submission') }}">
+          <i class="fa-solid fa-paper-plane"></i><span>{{ admin_t(request, 'Отправки', 'Submissions') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/game-score/' in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='game-score') }}">
+          <i class="fa-solid fa-trophy"></i><span>{{ admin_t(request, 'Результаты', 'Scores') }}</span>
+        </a>
+
+        <span class="admin-sidebar-section-title">{{ admin_t(request, 'Сайт', 'Site') }}</span>
+        <a class="admin-sidebar-link {% if current_path == '/admin/visual-editor' %}active{% endif %}" href="/admin/visual-editor">
+          <i class="fa-solid fa-images"></i><span>{{ admin_t(request, 'Медиа', 'Media') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if current_path == '/admin/visual-editor' %}active{% endif %}" href="/admin/visual-editor">
+          <i class="fa-solid fa-sliders"></i><span>{{ admin_t(request, 'Настройки', 'Settings') }}</span>
+        </a>
+        <a class="admin-sidebar-link {% if '/admin/task-submission/' in current_path or '/admin/game-score/' in current_path %}active{% endif %}" href="{{ request.url_for('admin:list', identity='task-submission') }}">
+          <i class="fa-solid fa-clock-rotate-left"></i><span>{{ admin_t(request, 'Логи', 'Logs') }}</span>
+        </a>
+      </nav>
+
+      <div class="admin-sidebar-spacer"></div>
+      {% if admin.authentication_backend %}
+      <a href="{{ request.url_for('admin:logout') }}" class="admin-logout-button">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span>{{ admin_t(request, 'Выйти', 'Logout') }}</span>
+      </a>
+      {% endif %}
+    </div>
+  </aside>
+  <div class="page-wrapper">
+    <div class="container-fluid">
+      <div class="page-header d-print-none">
+        {% block content_header %}
+        <div class="row align-items-center">
+          <div class="col">
+            <h2 class="page-title">{{ title }}</h2>
+            <div class="page-pretitle">{{ subtitle }}</div>
+          </div>
+        </div>
+        {% endblock %}
+      </div>
+    </div>
+    <div class="page-body flex-grow-1">
+      <div class="container-fluid">
+        <div class="row row-deck row-cards">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

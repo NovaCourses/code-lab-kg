@@ -1,0 +1,119 @@
+{% extends "sqladmin/layout.html" %}
+{% from 'sqladmin/_macros.html' import render_form_fields, admin_t with context %}
+
+{% block content %}
+<div class="col-12 admin-form-page">
+  <form action="{{ url_for('admin:create', identity=model_view.identity) }}" method="POST" enctype="multipart/form-data" class="admin-form-grid">
+    <section class="admin-form-card">
+      <div class="admin-form-hero">
+        <div>
+          <span class="admin-form-kicker">{{ admin_t(request, 'Новая запись', 'New record') }}</span>
+          <h3>{{ model_view.name }}</h3>
+          <p>{{ admin_t(request, 'Заполните основные поля, проверьте превью и сохраните контент в CMS.', 'Fill the main fields, check the preview, and save content to the CMS.') }}</p>
+        </div>
+        <span class="admin-form-icon"><i class="{{ model_view.icon or 'fa-solid fa-pen' }}"></i></span>
+      </div>
+
+      {% if error %}
+      <div class="alert alert-danger admin-alert" role="alert">{{ error }}</div>
+      {% endif %}
+
+      <fieldset class="form-fieldset">
+        {{ render_form_fields(form, form_opts=form_opts) }}
+      </fieldset>
+
+      <div class="admin-form-actions">
+        <a href="{{ url_for('admin:list', identity=model_view.identity) }}" class="btn btn-ghost">
+          {{ admin_t(request, 'Отмена', 'Cancel') }}
+        </a>
+        <button type="submit" name="save" value="Save" class="btn btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i>{{ admin_t(request, 'Сохранить', 'Save') }}
+        </button>
+        <button type="submit" name="save" value="Save and continue editing" class="btn btn-secondary">
+          {{ admin_t(request, 'Сохранить и продолжить', 'Save and continue') }}
+        </button>
+        <button type="submit" name="save" value="Save and add another" class="btn btn-secondary">
+          {{ admin_t(request, 'Сохранить и добавить ещё', 'Save and add more') }}
+        </button>
+      </div>
+    </section>
+
+    <aside class="admin-lesson-preview">
+      <div class="admin-preview-header">
+        <span>{{ admin_t(request, 'Live preview', 'Live preview') }}</span>
+        <strong>{{ admin_t(request, 'YouTube embed', 'YouTube embed') }}</strong>
+      </div>
+      <div class="admin-video-preview" data-video-preview>
+        <div class="admin-video-empty">
+          <i class="fa-brands fa-youtube"></i>
+          <span>{{ admin_t(request, 'Вставьте YouTube URL, чтобы увидеть превью.', 'Paste a YouTube URL to see preview.') }}</span>
+        </div>
+      </div>
+      <div class="admin-preview-card">
+        <small>{{ admin_t(request, 'Автоконвертация', 'Auto conversion') }}</small>
+        <code data-embed-output>https://www.youtube.com/embed/VIDEO_ID</code>
+      </div>
+      <div class="admin-preview-card">
+        <small>{{ admin_t(request, 'Thumbnail', 'Thumbnail') }}</small>
+        <img data-thumbnail-preview alt="{{ admin_t(request, 'Превью урока', 'Lesson preview') }}" />
+      </div>
+      <div class="admin-preview-card">
+        <small>{{ admin_t(request, 'Подсказка', 'Hint') }}</small>
+        <p>{{ admin_t(request, 'Поддерживаются youtu.be, watch?v=, shorts и playlist-ссылки. В базу сохраняется embed URL.', 'Supports youtu.be, watch?v=, shorts, and playlist URLs. The database stores the embed URL.') }}</p>
+      </div>
+    </aside>
+  </form>
+</div>
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script>
+  (function () {
+    function getYoutubeId(rawUrl) {
+      if (!rawUrl) return "";
+      try {
+        var url = new URL(rawUrl.trim());
+        if (url.hostname.includes("youtu.be")) return url.pathname.split("/").filter(Boolean)[0] || "";
+        if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/").filter(Boolean)[1] || "";
+        if (url.pathname.startsWith("/embed/")) return url.pathname.split("/").filter(Boolean)[1] || "";
+        return url.searchParams.get("v") || "";
+      } catch (error) {
+        var match = String(rawUrl).match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{6,})/);
+        return match ? match[1] : "";
+      }
+    }
+
+    function updatePreview() {
+      var input = document.querySelector("#youtube_url, #url");
+      var preview = document.querySelector("[data-video-preview]");
+      var output = document.querySelector("[data-embed-output]");
+      var thumbnail = document.querySelector("[data-thumbnail-preview]");
+      if (!input || !preview || !output) return;
+
+      var videoId = getYoutubeId(input.value);
+      if (!videoId) {
+        output.textContent = "https://www.youtube.com/embed/VIDEO_ID";
+        preview.innerHTML = '<div class="admin-video-empty"><i class="fa-brands fa-youtube"></i><span>{{ admin_t(request, "Вставьте YouTube URL, чтобы увидеть превью.", "Paste a YouTube URL to see preview.") }}</span></div>';
+        if (thumbnail) thumbnail.removeAttribute("src");
+        return;
+      }
+
+      var embed = "https://www.youtube.com/embed/" + videoId;
+      output.textContent = embed;
+      input.value = embed;
+      if (!preview.querySelector("iframe") || preview.querySelector("iframe").dataset.embed !== embed) {
+        preview.innerHTML = '<iframe data-embed="' + embed + '" src="' + embed + '?rel=0&modestbranding=1" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
+      if (thumbnail) thumbnail.src = "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg";
+    }
+
+    var urlInput = document.querySelector("#youtube_url, #url");
+    if (urlInput) {
+      urlInput.addEventListener("change", updatePreview);
+      urlInput.addEventListener("blur", updatePreview);
+      updatePreview();
+    }
+  })();
+</script>
+{% endblock %}

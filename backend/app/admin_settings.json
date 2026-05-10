@@ -1,0 +1,103 @@
+{
+  "site_name": "NovaCode",
+  "maintenance_mode": false,
+  "registration_enabled": true,
+  "default_language": "ru",
+  "theme": "system",
+  "ai_assistant_enabled": true,
+  "cms": {
+    "media": [],
+    "course_builder": {
+      "chapters": [
+        {
+          "id": "intro",
+          "title": "Getting started",
+          "lesson_ids": []
+        },
+        {
+          "id": "practice",
+          "title": "Practice track",
+          "lesson_ids": []
+        }
+      ],
+      "certificate_enabled": true
+    },
+    "realtime": {
+      "enabled": true,
+      "online_users_estimate": 0,
+      "refresh_seconds": 20
+    },
+    "presets": [],
+    "theme_editor": {
+      "secondary_color": "#2563eb",
+      "dark_background": "#050816",
+      "light_background": "#f8fafc",
+      "heading_scale": 1.0,
+      "glow_color": "#06b6d4",
+      "primary_color": "#7c3aed",
+      "font_family": "Inter, system-ui, sans-serif",
+      "base_font_size": 16
+    },
+    "ai_tools": {
+      "generate_lesson": true,
+      "generate_task": true,
+      "generate_quiz": true,
+      "improve_descriptions": true
+    },
+    "sections": [
+      {
+        "id": "statistics",
+        "label": "Statistics",
+        "enabled": true
+      },
+      {
+        "id": "daily_missions",
+        "label": "Daily missions",
+        "enabled": true
+      },
+      {
+        "id": "courses",
+        "label": "Courses",
+        "enabled": true
+      },
+      {
+        "id": "community",
+        "label": "Community",
+        "enabled": true
+      },
+      {
+        "id": "achievements",
+        "label": "Achievements",
+        "enabled": true
+      },
+      {
+        "id": "leaderboard",
+        "label": "Leaderboard",
+        "enabled": true
+      },
+      {
+        "id": "ai_assistant",
+        "label": "AI assistant",
+        "enabled": true
+      }
+    ],
+    "hero": {
+      "badge": "",
+      "background_image": "",
+      "gradient": "radial-gradient(circle at 10% 0%, rgba(124,58,237,0.18), transparent 34%)",
+      "primary_button": "",
+      "secondary_button": "",
+      "animations_enabled": true,
+      "subtitle": "",
+      "title": "NovaCode"
+    },
+    "site": {
+      "logo_text": "NovaCode",
+      "favicon_url": "",
+      "footer_text": "Learn programming with NovaCode.",
+      "seo_title": "NovaCode",
+      "seo_description": "Modern coding education platform.",
+      "open_graph_image": ""
+    }
+  }
+}

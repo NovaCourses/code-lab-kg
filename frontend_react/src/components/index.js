@@ -1,0 +1,5 @@
+export { AuthModal } from './AuthModal'
+export { Header } from './Header'
+export { Footer } from './Footer'
+export { default as CodeEditor } from './CodeEditor'
+export { default as AIAssistant } from './AIAssistant'

@@ -1,0 +1,180 @@
+.admin-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-analytics-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink-0);
+  margin: 0;
+}
+
+.admin-period-selector {
+  display: flex;
+  gap: 0.75rem;
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.375rem;
+}
+
+.admin-period-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-period-btn:hover {
+  color: var(--ink-0);
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+}
+
+.admin-period-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: var(--on-primary);
+}
+
+.admin-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+}
+
+.admin-analytics-card {
+  padding: 2rem;
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}
+
+.admin-analytics-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-0);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-chart-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 300px;
+}
+
+.admin-chart-skeleton-bar {
+  height: 32px;
+  background: color-mix(in srgb, var(--panel-strong) 10%, transparent);
+  border-radius: 4px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.admin-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.admin-game-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 300px;
+  overflow-y: auto;
+}
+
+.admin-game-stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--panel-strong) 5%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-game-stat-item:hover {
+  background: color-mix(in srgb, var(--panel-strong) 8%, transparent);
+  border-color: color-mix(in srgb, var(--ink-0) 12%, transparent);
+}
+
+.admin-game-stat-info {
+  flex: 1;
+}
+
+.admin-game-stat-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-0);
+  margin: 0;
+}
+
+.admin-game-stat-plays {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0.25rem 0 0 0;
+}
+
+.admin-game-stat-score {
+  font-size: 13px;
+  font-weight: 700;
+  color: #F59E0B;
+}
+
+@media (max-width: 1200px) {
+  .admin-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-analytics-card {
+    padding: 1.5rem;
+  }
+
+  .admin-period-selector {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .admin-period-btn {
+    flex: 1;
+    text-align: center;
+  }
+}
