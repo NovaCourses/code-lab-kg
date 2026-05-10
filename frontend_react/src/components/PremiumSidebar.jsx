@@ -63,7 +63,16 @@ export default function PremiumSidebar({
       >
         <Menu size={20} />
       </button>
-      {!collapsed && <button className="mobile-sidebar-backdrop" type="button" aria-label={t('menuClose')} onClick={onToggle} />}
+      <button
+        className={`mobile-sidebar-backdrop ${collapsed ? 'closed' : 'open'}`}
+        type="button"
+        aria-label={t('menuClose')}
+        aria-hidden={collapsed}
+        tabIndex={collapsed ? -1 : 0}
+        onClick={() => {
+          if (!collapsed) onToggle()
+        }}
+      />
 
       <motion.aside
         className={`premium-sidebar ${collapsed ? 'collapsed' : 'expanded'}`}

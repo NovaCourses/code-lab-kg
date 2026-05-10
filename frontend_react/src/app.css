@@ -2641,6 +2641,66 @@ body[data-theme='light'] .particle {
   min-width: 0;
 }
 
+.particles,
+.particles-canvas,
+.particles-canvas canvas,
+.glow,
+.hero-glow,
+.background-orb,
+.ambient,
+.decorative-layer,
+.neon-grid,
+.hero-background,
+.floating-particles,
+.particle,
+.premium-background,
+.premium-background::before,
+.premium-background::after,
+.premium-gradient,
+.premium-grid-overlay,
+.game-card-overlay,
+.orbit-ring,
+.orbit-dot,
+.loading-logo-orbit,
+.cursor-effects,
+.cursor-glow,
+.cursor-trail-dot {
+  pointer-events: none !important;
+}
+
+.main-content,
+.page-content,
+.content-wrap,
+.route-transition,
+.page-grid,
+.games-grid,
+.cards-grid,
+.game-card-modern,
+.game-panel,
+.game-arena-card,
+.game-stage,
+.task-panel,
+.task-card,
+.task-editor-card,
+.task-submission-card,
+.lesson-panel {
+  position: relative;
+  z-index: 1;
+}
+
+button,
+input,
+textarea,
+a,
+.game-choices,
+.game-answer-form,
+.task-actions-row,
+.lesson-quiz-list,
+.lesson-quiz-footer {
+  position: relative;
+  z-index: 2;
+}
+
 .premium-background {
   position: fixed;
   inset: 0;
@@ -3535,6 +3595,11 @@ body[data-theme='dark'] .premium-grid-overlay {
   display: none;
 }
 
+.mobile-sidebar-backdrop.closed {
+  display: none;
+  pointer-events: none;
+}
+
 @media (max-width: 1180px) {
   .app-shell.with-sidebar {
     --sidebar-rail: 96px;
@@ -3595,11 +3660,20 @@ body[data-theme='dark'] .premium-grid-overlay {
     position: fixed;
     inset: 0;
     z-index: 103;
-    display: block;
     border: 0;
     background: rgba(2, 6, 23, 0.46);
     backdrop-filter: blur(5px);
     cursor: pointer;
+  }
+
+  .mobile-sidebar-backdrop.open {
+    display: block;
+    pointer-events: auto;
+  }
+
+  .mobile-sidebar-backdrop.closed {
+    display: none;
+    pointer-events: none;
   }
 
   .content-wrap,

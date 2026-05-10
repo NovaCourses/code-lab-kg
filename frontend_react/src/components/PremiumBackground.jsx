@@ -34,12 +34,10 @@ export default function PremiumBackground() {
       interactivity: {
         events: {
           onHover: {
-            enable: true,
-            mode: 'grab',
+            enable: false,
           },
           onClick: {
-            enable: true,
-            mode: 'push',
+            enable: false,
           },
           resize: {
             enable: true,

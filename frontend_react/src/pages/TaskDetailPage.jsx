@@ -12,6 +12,7 @@ export default function TaskDetailPage() {
   const [error, setError] = useState('')
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState('')
+  const [submitError, setSubmitError] = useState('')
   const [xpAwarded, setXpAwarded] = useState(0)
   const [pending, setPending] = useState(false)
   const [elapsed, setElapsed] = useState(0)
@@ -31,6 +32,7 @@ export default function TaskDetailPage() {
   useEffect(() => {
     setElapsed(0)
     setResult('')
+    setSubmitError('')
     setXpAwarded(0)
     setAnswer('')
     load()
@@ -49,11 +51,17 @@ export default function TaskDetailPage() {
     return { limit, xp, progress }
   }, [data?.task?.difficulty, data?.task?.timeLimitMinutes, data?.task?.xpReward, elapsed])
 
-  const submitAnswer = async () => {
-    if (pending || !answer.trim()) return
+  const submitAnswer = async (event) => {
+    event?.preventDefault?.()
+    if (pending) return
+    if (!answer.trim()) {
+      setSubmitError(t('resultIncorrect'))
+      return
+    }
 
     setPending(true)
     setResult('')
+    setSubmitError('')
     setXpAwarded(0)
     try {
       const response = await apiPost(`/api/tasks/${taskId}/submit`, { answer })
@@ -71,8 +79,8 @@ export default function TaskDetailPage() {
         }
       }
       await load()
-    } catch (submitError) {
-      setError(submitError?.status === 401 ? t('loginToSubmit') : t('taskSubmitFailed'))
+    } catch (submitRequestError) {
+      setSubmitError(submitRequestError?.status === 401 ? t('loginToSubmit') : t('taskSubmitFailed'))
     } finally {
       setPending(false)
     }
@@ -123,8 +131,14 @@ export default function TaskDetailPage() {
             {t('resultIncorrect')}
           </p>
         )}
+        {submitError && (
+          <p className="alert error task-feedback">
+            <XCircle size={16} />
+            {submitError}
+          </p>
+        )}
 
-        <div className="form-stack">
+        <form className="form-stack" onSubmit={submitAnswer}>
           <label>
             {t('answer')}
             <textarea
@@ -135,7 +149,7 @@ export default function TaskDetailPage() {
               onKeyDown={(event) => {
                 if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
                   event.preventDefault()
-                  submitAnswer()
+                  submitAnswer(event)
                 }
               }}
               placeholder={t('taskAnswerPlaceholder')}
@@ -147,12 +161,12 @@ export default function TaskDetailPage() {
               <HelpCircle size={16} />
               {t('taskHint')}
             </button>
-            <button type="button" className="premium-button" onClick={submitAnswer} disabled={pending || !answer.trim()}>
+            <button type="submit" className="premium-button" disabled={pending}>
               <Send size={16} />
               {pending ? t('loading') : t('submit')}
             </button>
           </div>
-        </div>
+        </form>
         {hintOpen && (
           <div className="task-hint-card">
             <Lightbulb size={18} />
