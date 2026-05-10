@@ -19,7 +19,7 @@ from app.entities.lessons.models import LessonVideoLink
 from app.entities.lessons.service import get_lesson, list_lessons, to_embed_url
 from app.entities.localization.service import resolve_language
 from app.entities.tasks.models import TaskSubmission
-from app.entities.tasks.service import get_task, get_user_submissions_for_task, list_tasks, submit_answer
+from app.entities.tasks.service import check_answer, get_task, get_user_submissions_for_task, list_tasks, submit_answer
 from app.entities.users.models import User, UserActivity
 from app.entities.users.schemas import UserRegister
 from app.entities.users.service import (
@@ -488,12 +488,27 @@ def api_submit_task(
     db: Session = Depends(get_db),
 ):
     current_user = get_optional_user(request, db)
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="auth_required")
-
     task = get_task(db, task_id)
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="task_not_found")
+
+    if not current_user:
+        is_correct = check_answer(task, payload.answer)
+        return {
+            "ok": True,
+            "result": "correct" if is_correct else "incorrect",
+            "submission": {
+                "id": None,
+                "answer": payload.answer,
+                "isCorrect": is_correct,
+                "createdAt": _to_iso(datetime.utcnow()),
+            },
+            "xpReward": _task_xp_reward(task),
+            "xpAwarded": 0,
+            "saved": False,
+            "requiresAuthForSave": True,
+            "user": None,
+        }
 
     had_correct_submission = db.scalar(
         select(TaskSubmission.id)
@@ -517,6 +532,8 @@ def api_submit_task(
         "submission": _serialize_submission(submission),
         "xpReward": xp_reward,
         "xpAwarded": xp_awarded,
+        "saved": True,
+        "requiresAuthForSave": False,
         "user": _serialize_user(current_user),
     }
 

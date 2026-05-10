@@ -5159,6 +5159,19 @@ body[data-theme='dark'] .premium-grid-overlay {
   gap: 0.48rem;
 }
 
+.inline-link-button {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.45rem;
+  border: 0;
+  padding: 0;
+  color: var(--accent-a);
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .task-hint-card {
   display: flex;
   gap: 0.65rem;

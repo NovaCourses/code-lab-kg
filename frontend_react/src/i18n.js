@@ -213,6 +213,7 @@ export const messages = {
     postComment: 'Post Comment',
     loginToComment: 'Login to leave a comment.',
     loginToSubmit: 'Login to submit a solution.',
+    answerWithoutLogin: 'You can check answers now. Login only saves history and XP.',
     loginToSaveScore: 'Login to save your score.',
     leaderboard: 'Leaderboard',
     noScores: 'No scores yet.',

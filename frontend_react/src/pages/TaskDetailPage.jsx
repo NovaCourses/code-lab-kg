@@ -51,10 +51,6 @@ export default function TaskDetailPage() {
 
   const submitAnswer = async (event) => {
     event.preventDefault()
-    if (!auth.authenticated) {
-      onOpenAuth('login')
-      return
-    }
     if (!answer.trim()) return
 
     setPending(true)
@@ -71,15 +67,13 @@ export default function TaskDetailPage() {
         if (response.xpAwarded) {
           await refreshSession()
           showToast({ eyebrow: t('solvedTask'), title: data?.task?.title || t('tasksTitle'), xp: response.xpAwarded })
+        } else if (response.requiresAuthForSave) {
+          showToast({ eyebrow: t('resultCorrect'), title: t('loginToSubmit'), xp: 0 })
         }
       }
       await load()
     } catch (submitError) {
-      if (submitError?.status === 401) {
-        onOpenAuth('login')
-      } else {
-        setError(t('taskSubmitFailed'))
-      }
+      setError(submitError?.status === 401 ? t('loginToSubmit') : t('taskSubmitFailed'))
     } finally {
       setPending(false)
     }
@@ -160,7 +154,14 @@ export default function TaskDetailPage() {
             <p>{data.task.hint || t('taskHintText')}</p>
           </div>
         )}
-        {!auth.authenticated && <p>{t('loginToSubmit')}</p>}
+        {!auth.authenticated && (
+          <p className="meta-line">
+            {t('answerWithoutLogin')}
+            <button className="inline-link-button" type="button" onClick={() => onOpenAuth('login')}>
+              {t('login')}
+            </button>
+          </p>
+        )}
         {burst && (
           <div className="confetti-burst" aria-hidden="true">
             {Array.from({ length: 12 }, (_, index) => <i key={index} style={{ '--i': index }} />)}

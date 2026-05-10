@@ -281,6 +281,14 @@ export default function GameDetailPage() {
     finishRound(choiceIndex === question.correct, expected)
   }
 
+  const onChoiceTextSubmit = (event) => {
+    event.preventDefault()
+    if (phase !== 'playing' || !answer.trim()) return
+    const question = questions[Math.min(roundIndex, questions.length - 1)]
+    const expected = question.choices[question.correct] || ''
+    finishRound(normalizeText(answer).toLowerCase() === normalizeText(expected).toLowerCase(), expected)
+  }
+
   if (!data) return <p className="premium-card">{t('loading')}</p>
   if (loadError || !data.game) return <p className="premium-card alert error">{loadError || t('gameUnknown')}</p>
 
@@ -321,7 +329,7 @@ export default function GameDetailPage() {
             <small>{t('convertHintSuffix')}</small>
           </div>
           <form className="inline-form game-answer-form" onSubmit={onBinarySubmit}>
-            <input value={answer} onChange={(event) => setAnswer(event.target.value)} autoComplete="off" />
+            <input value={answer} onChange={(event) => setAnswer(event.target.value)} autoComplete="off" placeholder="1010" />
             <button className="btn" type="submit">
               <CheckCircle2 size={16} />
               {t('check')}
@@ -370,6 +378,13 @@ export default function GameDetailPage() {
               </button>
             ))}
           </div>
+          <form className="inline-form game-answer-form" onSubmit={onChoiceTextSubmit}>
+            <input value={answer} onChange={(event) => setAnswer(event.target.value)} autoComplete="off" placeholder={t('answer')} />
+            <button className="btn" type="submit">
+              <CheckCircle2 size={16} />
+              {t('check')}
+            </button>
+          </form>
         </>
       )}
     </div>
