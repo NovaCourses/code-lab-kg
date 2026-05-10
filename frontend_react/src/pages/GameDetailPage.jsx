@@ -20,7 +20,8 @@ import { apiGet, apiPost } from '../api'
 import { useAppContext } from '../contexts'
 
 const makeDecimal = (max = 31, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min
-const normalizeText = (value) => String(value || '').replace(/\r\n/g, '\n').trim()
+const normalizeText = (value) => String(value ?? '').replace(/\r\n/g, '\n').trim()
+const normalizeAnswer = (value) => normalizeText(value).toLowerCase()
 
 const FALLBACK_QUESTIONS = {
   'bug-hunt': [
@@ -77,12 +78,14 @@ export default function GameDetailPage() {
   const [loadError, setLoadError] = useState('')
   const [statusText, setStatusText] = useState('')
   const [feedback, setFeedback] = useState('')
+  const [feedbackTone, setFeedbackTone] = useState('')
   const [soundOn, setSoundOn] = useState(true)
   const [burst, setBurst] = useState(false)
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
   const [roundIndex, setRoundIndex] = useState(0)
   const [answer, setAnswer] = useState('')
+  const [selectedChoiceIndex, setSelectedChoiceIndex] = useState(null)
   const [phase, setPhase] = useState('playing')
   const [saved, setSaved] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(60)
@@ -128,10 +131,12 @@ export default function GameDetailPage() {
   const resetGame = useCallback(() => {
     setStatusText('')
     setFeedback('')
+    setFeedbackTone('')
     setScore(0)
     setCombo(0)
     setRoundIndex(0)
     setAnswer('')
+    setSelectedChoiceIndex(null)
     setPhase('playing')
     setSaved(false)
     setSecondsLeft(totalTime)
@@ -184,6 +189,7 @@ export default function GameDetailPage() {
   const celebrate = useCallback(
     (message) => {
       setFeedback(message)
+      setFeedbackTone('success')
       setBurst(true)
       playTone('success')
       window.setTimeout(() => setBurst(false), 850)
@@ -236,12 +242,14 @@ export default function GameDetailPage() {
       celebrate(t('gameCorrectFeedback'))
     } else {
       playTone('error')
+      setFeedbackTone('error')
       setFeedback(expectedText ? `${t('gameWrongFeedback')} ${expectedText}` : t('gameWrongTryAgain'))
     }
 
     setScore(nextScore)
     setCombo(nextCombo)
     setAnswer('')
+    setSelectedChoiceIndex(null)
 
     if (nextRound >= totalRounds) {
       setPhase(nextScore > 0 ? 'won' : 'lost')
@@ -252,41 +260,61 @@ export default function GameDetailPage() {
     setDecimal(makeDecimal(maxDecimal, minDecimal))
   }
 
-  const onBinarySubmit = (event) => {
-    event.preventDefault()
-    if (phase !== 'playing') return
-    const expected = decimal.toString(2)
-    finishRound(normalizeText(answer) === expected, expected)
+  const showAnswerError = (message) => {
+    playTone('error')
+    setCombo(0)
+    setFeedbackTone('error')
+    setFeedback(message)
   }
 
-  const onTypingSubmit = (event) => {
-    event.preventDefault()
+  const checkBinaryAnswer = () => {
+    if (phase !== 'playing') return
+    const expected = decimal.toString(2)
+    if (!normalizeAnswer(answer)) {
+      showAnswerError(t('gameWrongTryAgain'))
+      return
+    }
+    finishRound(normalizeAnswer(answer) === normalizeAnswer(expected), expected)
+  }
+
+  const checkTypingAnswer = () => {
     if (phase !== 'playing') return
     const question = questions[Math.min(roundIndex, questions.length - 1)]
-    const expected = normalizeText(question.code)
-    const correct = normalizeText(answer) === expected
+    const expected = normalizeAnswer(question.code)
+    const correct = normalizeAnswer(answer) === expected
     if (!correct) {
-      playTone('error')
-      setCombo(0)
-      setFeedback(t('typingRaceMismatch'))
+      showAnswerError(t('typingRaceMismatch'))
       return
     }
     finishRound(true)
   }
 
-  const onChoice = (choiceIndex) => {
+  const checkQuizAnswer = (choiceIndex = selectedChoiceIndex, typedValue = answer) => {
     if (phase !== 'playing') return
     const question = questions[Math.min(roundIndex, questions.length - 1)]
-    const expected = question.choices[question.correct]
-    finishRound(choiceIndex === question.correct, expected)
+    const correctIndex = Number(question.correct || 0)
+    const expected = question.choices[correctIndex] || ''
+    const typedAnswer = normalizeAnswer(typedValue)
+    const selectedCorrect = choiceIndex !== null && Number(choiceIndex) === correctIndex
+    const typedCorrect = typedAnswer.length > 0 && typedAnswer === normalizeAnswer(expected)
+
+    if (!typedAnswer && choiceIndex === null) {
+      showAnswerError(t('gameWrongTryAgain'))
+      return
+    }
+
+    finishRound(selectedCorrect || typedCorrect, expected)
   }
 
-  const onChoiceTextSubmit = (event) => {
-    event.preventDefault()
-    if (phase !== 'playing' || !answer.trim()) return
+  const chooseAndCheckAnswer = (choiceIndex) => {
+    if (phase !== 'playing') return
     const question = questions[Math.min(roundIndex, questions.length - 1)]
-    const expected = question.choices[question.correct] || ''
-    finishRound(normalizeText(answer).toLowerCase() === normalizeText(expected).toLowerCase(), expected)
+    const choice = String(question.choices[choiceIndex] ?? '')
+    setSelectedChoiceIndex(choiceIndex)
+    setAnswer(choice)
+    setFeedback('')
+    setFeedbackTone('')
+    checkQuizAnswer(choiceIndex, choice)
   }
 
   if (!data) return <p className="premium-card">{t('loading')}</p>
@@ -328,13 +356,24 @@ export default function GameDetailPage() {
             <strong>{decimal}</strong>
             <small>{t('convertHintSuffix')}</small>
           </div>
-          <form className="inline-form game-answer-form" onSubmit={onBinarySubmit}>
-            <input value={answer} onChange={(event) => setAnswer(event.target.value)} autoComplete="off" placeholder="1010" />
-            <button className="btn" type="submit">
+          <div className="inline-form game-answer-form">
+            <input
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  checkBinaryAnswer()
+                }
+              }}
+              autoComplete="off"
+              placeholder="1010"
+            />
+            <button className="btn" type="button" onClick={checkBinaryAnswer}>
               <CheckCircle2 size={16} />
               {t('check')}
             </button>
-          </form>
+          </div>
         </>
       )}
     </div>
@@ -346,19 +385,25 @@ export default function GameDetailPage() {
         <>
           <p className="game-question-title">{currentQuestion.title}</p>
           <pre>{currentQuestion.code}</pre>
-          <form className="form-stack" onSubmit={onTypingSubmit}>
+          <div className="form-stack">
             <textarea
               className="game-answer-textarea"
               rows={5}
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
+              onKeyDown={(event) => {
+                if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                  event.preventDefault()
+                  checkTypingAnswer()
+                }
+              }}
               spellCheck="false"
             />
-            <button className="premium-button" type="submit">
+            <button className="premium-button" type="button" onClick={checkTypingAnswer}>
               <Send size={16} />
               {t('submit')}
             </button>
-          </form>
+          </div>
         </>
       )}
     </div>
@@ -373,18 +418,38 @@ export default function GameDetailPage() {
           <pre>{currentQuestion.code}</pre>
           <div className="choices game-choices">
             {currentQuestion.choices.map((choice, index) => (
-              <button key={`${choice}-${index}`} type="button" className="btn btn-ghost" onClick={() => onChoice(index)}>
+              <button
+                key={`${choice}-${index}`}
+                type="button"
+                className={`btn btn-ghost ${selectedChoiceIndex === index ? 'is-selected' : ''}`}
+                aria-pressed={selectedChoiceIndex === index}
+                onClick={() => chooseAndCheckAnswer(index)}
+              >
                 {choice}
               </button>
             ))}
           </div>
-          <form className="inline-form game-answer-form" onSubmit={onChoiceTextSubmit}>
-            <input value={answer} onChange={(event) => setAnswer(event.target.value)} autoComplete="off" placeholder={t('answer')} />
-            <button className="btn" type="submit">
+          <div className="inline-form game-answer-form">
+            <input
+              value={answer}
+              onChange={(event) => {
+                setAnswer(event.target.value)
+                setSelectedChoiceIndex(null)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  checkQuizAnswer()
+                }
+              }}
+              autoComplete="off"
+              placeholder={t('answer')}
+            />
+            <button className="btn" type="button" onClick={checkQuizAnswer}>
               <CheckCircle2 size={16} />
               {t('check')}
             </button>
-          </form>
+          </div>
         </>
       )}
     </div>
@@ -426,7 +491,7 @@ export default function GameDetailPage() {
         {mode === 'typing-race' && renderTyping()}
         {mode !== 'binary' && mode !== 'typing-race' && renderQuiz()}
 
-        {feedback && <p className={`game-feedback ${phase === 'lost' ? 'is-error' : ''}`}>{feedback}</p>}
+        {feedback && <p className={`game-feedback ${feedbackTone === 'error' || phase === 'lost' ? 'is-error' : ''}`}>{feedback}</p>}
         {statusText && <p className="meta-line">{statusText}</p>}
         {!auth.authenticated && (
           <button className="btn btn-ghost" type="button" onClick={() => onOpenAuth('login')}>

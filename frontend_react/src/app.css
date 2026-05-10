@@ -1270,6 +1270,7 @@ textarea {
   content: '';
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background: linear-gradient(
     145deg,
     rgba(255,255,255,0.08),
@@ -5346,6 +5347,14 @@ body[data-theme='dark'] .premium-grid-overlay {
 
 .game-choices button {
   min-width: 120px;
+}
+
+.game-choices button.is-selected,
+.game-choices button[aria-pressed='true'] {
+  border-color: color-mix(in srgb, var(--accent-a) 52%, var(--border));
+  color: var(--accent-a);
+  background: color-mix(in srgb, var(--accent-a) 14%, var(--surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-a) 14%, transparent);
 }
 
 .game-feedback {

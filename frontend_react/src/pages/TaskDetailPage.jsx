@@ -49,9 +49,8 @@ export default function TaskDetailPage() {
     return { limit, xp, progress }
   }, [data?.task?.difficulty, data?.task?.timeLimitMinutes, data?.task?.xpReward, elapsed])
 
-  const submitAnswer = async (event) => {
-    event.preventDefault()
-    if (!answer.trim()) return
+  const submitAnswer = async () => {
+    if (pending || !answer.trim()) return
 
     setPending(true)
     setResult('')
@@ -125,7 +124,7 @@ export default function TaskDetailPage() {
           </p>
         )}
 
-        <form className="form-stack" onSubmit={submitAnswer}>
+        <div className="form-stack">
           <label>
             {t('answer')}
             <textarea
@@ -133,6 +132,12 @@ export default function TaskDetailPage() {
               rows={10}
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
+              onKeyDown={(event) => {
+                if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                  event.preventDefault()
+                  submitAnswer()
+                }
+              }}
               placeholder={t('taskAnswerPlaceholder')}
               spellCheck="false"
             />
@@ -142,12 +147,12 @@ export default function TaskDetailPage() {
               <HelpCircle size={16} />
               {t('taskHint')}
             </button>
-            <button type="submit" className="premium-button" disabled={pending || !answer.trim()}>
+            <button type="button" className="premium-button" onClick={submitAnswer} disabled={pending || !answer.trim()}>
               <Send size={16} />
               {pending ? t('loading') : t('submit')}
             </button>
           </div>
-        </form>
+        </div>
         {hintOpen && (
           <div className="task-hint-card">
             <Lightbulb size={18} />
